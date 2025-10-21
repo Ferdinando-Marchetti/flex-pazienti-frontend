@@ -1,10 +1,10 @@
-import { Button } from '@/components/ui/button';
+import { Outlet } from "react-router-dom"
 
 function App() {
   return (
-    <div className='h-screen w-screen flex justify-center items-center md:bg-red-500 '>
-      <Button> Test </Button>
-    </div>
+  <>
+    <Outlet />
+  </>
   )
 }
 
