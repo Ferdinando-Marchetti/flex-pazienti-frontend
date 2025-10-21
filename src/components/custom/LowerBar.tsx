@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, MapPinHouse, NotebookText, User } from 'lucide-react';
+import { LayoutDashboard,  MessageCircle,  User } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 
 export function LowerBar() {
@@ -7,8 +7,8 @@ export function LowerBar() {
 
   const navItems = [
     { href: "/app/dashboard", icon: LayoutDashboard },
-    { href: "/app/places", icon: MapPinHouse },
-    { href: "/app/reservations", icon: NotebookText },
+    { href: "/app/chat", icon: MessageCircle },
+    { href: "/app/chat", icon: MessageCircle },
     { href: "/app/profile", icon: User },
   ];
 
