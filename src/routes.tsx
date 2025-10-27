@@ -4,17 +4,23 @@ import App from "./App"
 import AppLayout from "./pages/app/AppLayout"
 import DashboardPage from "./pages/app/DashboardPage"
 import ChatPage from "./pages/app/Chat"
-import LoginPage from "./pages/Login"
+import LoginPage from "./pages/auth/Login"
+import RegisterPage from "./pages/auth/Register"
+import EserciziPage from "./pages/app/Esercizi"
+import AppuntamentiPage from "./pages/app/Appuntamenti"
 
 export const router = createBrowserRouter([
   { path: '', element: <App />, children:[
     { index: true, element: <Navigate to="/login" replace /> },
     { path: '/login', element: <LoginPage /> },
+    { path: '/sign-up', element: <RegisterPage /> },
     { path: "/app", children:[
       { path: '', element: <AppLayout />, children:[
         { index: true, element: <Navigate to="dashboard" replace /> },
         { path: "dashboard", element: <DashboardPage /> },
         { path: "chat", element: <ChatPage /> },
+        { path: "esercizi", element: <EserciziPage /> },
+        { path: "appuntamenti", element: <AppuntamentiPage /> },
       ]}
     ]}
   ]},
