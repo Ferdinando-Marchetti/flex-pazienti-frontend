@@ -2,55 +2,43 @@ import { createContext, useContext, useState, type ReactNode, useEffect } from '
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios, { type AxiosResponse } from 'axios';
 
-// URL di base dell'API (Assicurati che sia quello corretto per il tuo backend)
+// ✅ URL base del backend
 const API_URL = import.meta.env.VITE_API_URL || "https://84dcg7p1-1337.euw.devtunnels.ms/";
 
-// Interfaccia che riflette i campi del pazienti (al netto della password)
+// ✅ Tipi
 interface PatientUser {
   id: number;
   nome: string;
   cognome: string;
   email: string;
-  data_nascita: string; // La data sarà una stringa ISO o simile
+  data_nascita: string;
   genere: 'M' | 'F' | 'Altro';
-  altezza: number | null; // Usiamo number | null per Altezza e Peso
+  altezza: number | null;
   peso: number | null;
   diagnosi: string | null;
 }
 
-// Interfaccia per la risposta dei dati (per coerenza con il backend)
 interface ApiResponse<T> {
-    data: T;
+  data: T;
 }
 
 interface AuthContextType {
   user: PatientUser | null;
   login: (email: string, password: string) => Promise<void>;
-  // ✅ FUNZIONE AGGIUNTA PER LA FASE 1
-  registerCheckEmail: (email: string) => Promise<void>; 
-  // ✅ FUNZIONE PER LA FASE 2
-  registerComplete: (
-    nome: string,
-    cognome: string,
-    data_nascita: string,
-    genere: 'M' | 'F' | 'Altro',
-    altezza: number | null,
-    peso: number | null,
-    diagnosi: string,
-    email: string,
-    password: string,
-  ) => Promise<void>;
+  checkEmail: (email: string) => Promise<void>;
+  registerComplete: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   isLoading: boolean;
 }
 
+// ✅ Creazione contesto
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Axios instance configurata
+// ✅ Axios configurato
 export const api = axios.create({
   baseURL: API_URL,
   headers: { "Content-Type": "application/json" },
-  withCredentials: true, // Importante per i refresh token basati su cookie
+  withCredentials: true, // serve per cookie del refresh token
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -60,26 +48,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Rotte da escludere dal check iniziale di autenticazione
-  const ExcludeCheck = [
-    { href: "/auth/login"},
-    { href: "/auth/register"},
-  ];
+  // --- Rotte da escludere dal controllo automatico ---
+  const ExcludeCheck = ["/login"];
 
-  const currentPage =
-    ExcludeCheck.find(
-      (Ex) =>
-        location.pathname === Ex.href ||
-        location.pathname.startsWith(`${Ex.href}/`)
-    )?.href || "";
-
-  // --- Funzione di logout forzato centralizzata ---
+  // --- Logout forzato centralizzato ---
   const handleForceLogout = (redirect = true) => {
     setUser(null);
     setAccessToken(null);
-    if (redirect) {
-      navigate('/auth/login', { replace: true }); 
-    }
+    if (redirect) navigate('/login', { replace: true });
   };
 
   // --- INTERCEPTOR RISPOSTE ---
@@ -88,24 +64,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       (response) => response,
       async (error) => {
         const originalRequest = error.config;
-        
-        if(error.response?.status === 503){
+
+        // Gestione manutenzione
+        if (error.response?.status === 503) {
           navigate('/maintenance');
         }
 
+        // Gestione refresh token automatico
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
           try {
-            const { data }: AxiosResponse<ApiResponse<{ accessToken: string; user: PatientUser }>> = await api.post('/pazienti/auth/refresh');
-            const { accessToken: newAccessToken, user } = data.data;
+            const { data }: AxiosResponse<ApiResponse<{ accessToken: string; user: PatientUser }>> =
+              await api.post('/pazienti/auth/refreshToken');
 
-            setAccessToken(newAccessToken);
+            const { accessToken: newAccess, user } = data.data;
+            setAccessToken(newAccess);
             setUser(user);
 
-            originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
+            // Aggiorna token nella richiesta originale e ripeti
+            originalRequest.headers['Authorization'] = `Bearer ${newAccess}`;
             return api(originalRequest);
           } catch (refreshError) {
-            console.warn('❌ Refresh fallito, logout forzato');
+            console.warn("❌ Refresh token fallito, logout");
             handleForceLogout();
             return Promise.reject(refreshError);
           }
@@ -122,7 +102,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => api.interceptors.response.eject(responseInterceptor);
   }, [navigate]);
 
-  // --- INTERCEPTOR RICHIESTE (autorizzazione) ---
+  // --- INTERCEPTOR RICHIESTE (aggiunge token se presente) ---
   useEffect(() => {
     const requestInterceptor = api.interceptors.request.use(
       (config) => {
@@ -133,94 +113,69 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       },
       (error) => Promise.reject(error)
     );
-
     return () => api.interceptors.request.eject(requestInterceptor);
   }, [accessToken]);
 
-
-  // --- Funzioni di Autenticazione ---
-
-  const checkUserStatus = async () => {
-    try {
-      setIsLoading(true);
-      const { data }: AxiosResponse<ApiResponse<{ accessToken: string; user: PatientUser }>> = await api.post('/pazienti/auth/checkRefresh');
-      const { accessToken: newAccessToken, user } = data.data;
-
-      setAccessToken(newAccessToken);
-      setUser(user);
-    } catch {
-      handleForceLogout(false);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
+  // --- CHECK INIZIALE: tenta refresh all'avvio (se non in /auth/*) ---
   useEffect(() => {
-    if(location.pathname !== currentPage){
-      checkUserStatus();
-    } else {
+    const shouldCheck = !ExcludeCheck.some((path) => location.pathname.startsWith(path));
+
+    if (!shouldCheck) {
       setIsLoading(false);
+      return;
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.pathname]); 
 
-  // ✅ IMPLEMENTAZIONE FASE 1: Verifica Email
-  const registerCheckEmail = async (email: string) => {
-      // Nota: usiamo GET/POST con parametri nell'URL come da implementazione del controller
+    (async () => {
       try {
-          // Endpoint: /pazienti/auth/register/test@email.com
-          const url = `/pazienti/auth/check-register`; 
-          await api.post(url,{email}); 
-      } catch (error) {
-          if (axios.isAxiosError(error) && error.response) {
-              // Estraiamo il messaggio d'errore dal backend (es. "Email non trovata" o "Già registrato")
-              return Promise.reject(error.response.data.message || "Errore durante la verifica dell'email.");
-          }
-          return Promise.reject("Errore di rete o del server.");
+        const { data }: AxiosResponse<ApiResponse<{ accessToken: string; user: PatientUser }>> =
+          await api.post('/pazienti/auth/refreshToken');
+
+        const { accessToken, user } = data.data;
+        setAccessToken(accessToken);
+        setUser(user);
+      } catch {
+        console.log("❌ Nessun refresh valido, utente non loggato");
+        handleForceLogout(false);
+      } finally {
+        setIsLoading(false);
       }
+    })();
+  }, [location.pathname]);
+
+  // --- Verifica email ---
+  const checkEmail = async (email: string) => {
+    await api.post('/pazienti/auth/check-email', { email });
   };
 
-
+  // --- Login ---
   const login = async (email: string, password: string) => {
-    await api.post('/pazienti/auth/login', { email, password });
-    await checkUserStatus();
-    navigate('/app/dashboard'); 
+    try {
+      const { data }: AxiosResponse<ApiResponse<{ accessToken: string; user: PatientUser }>> =
+        await api.post('/pazienti/auth/login', { email, password });
+      const { accessToken, user } = data.data;
+
+      setAccessToken(accessToken);
+      setUser(user);
+      navigate('/app/dashboard');
+    } catch (error) {
+      throw error;
+    }
   };
 
-  // ✅ IMPLEMENTAZIONE FASE 2: Registrazione Completa
-  const registerComplete = async (
-    nome: string,
-    cognome: string,
-    data_nascita: string,
-    genere: 'M' | 'F' | 'Altro',
-    altezza: number | null,
-    peso: number | null,
-    diagnosi: string,
-    email: string,
-    password: string,
-  ) => {
+  // --- Registrazione completa ---
+  const registerComplete = async (email: string, password: string) => {
     try {
-      await api.post('/pazienti/auth/register', {
-        nome,
-        cognome,
-        data_nascita,
-        genere,
-        altezza,
-        peso,
-        diagnosi,
-        email,
-        password,
-      });
-      // Login automatico dopo la registrazione
-      await login(email, password);
+      await api.post('/pazienti/auth/register', { email, password });
+      await login(email, password); // login automatico
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
-            return Promise.reject(error.response.data.message || "Errore durante il completamento della registrazione.");
-        }
-        return Promise.reject("Errore di rete o del server.");
+        throw new Error(error.response.data.message || "Errore durante la registrazione.");
+      }
+      throw new Error("Errore di rete o del server.");
     }
   };
 
+  // --- Logout ---
   const logout = async () => {
     try {
       await api.post('/pazienti/auth/logout');
@@ -232,12 +187,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, registerCheckEmail, registerComplete, logout, isLoading }}>
+    <AuthContext.Provider
+      value={{ user, login, checkEmail, registerComplete, logout, isLoading }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
+// ✅ Hook personalizzato
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) throw new Error('useAuth deve essere usato dentro un AuthProvider');
