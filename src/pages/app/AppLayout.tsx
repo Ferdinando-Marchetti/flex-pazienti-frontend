@@ -14,6 +14,8 @@ export default function AppLayout() {
   const navNames = [
     { href: "/app/dashboard", name: "Dashboard" },
     { href: "/app/chat", name: "Chat" },
+    { href: "/app/appuntamenti", name: "Appuntamenti" },
+    { href: "/app/esercizi", name: "Esercizi" },
   ];
 
   const currentPage =

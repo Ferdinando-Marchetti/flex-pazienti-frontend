@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import axios, { type AxiosResponse } from 'axios';
 
 // ✅ URL base del backend
-const API_URL = import.meta.env.VITE_API_URL || "https://84dcg7p1-1337.euw.devtunnels.ms/";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:1337/";
 
 // ✅ Tipi
 interface PatientUser {
