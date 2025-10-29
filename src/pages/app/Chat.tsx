@@ -6,7 +6,7 @@ import './Chat.css'
 
 export default function ChatPage() {
   return (
-    <div className="w-full h-[80%] flex items-center justify-center">
+    <div className="w-full h-[90vh] flex items-center justify-center">
       <Card className="w-full h-full flex flex-col shadow-lg overflow-hidden">
         <ChatContainer />
       </Card>
