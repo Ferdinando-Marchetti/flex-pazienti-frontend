@@ -7,15 +7,18 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { AppSidebar } from "@/components/custom/navBar/app-sidebar";
 import { useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { Loader } from "lucide-react";
 
 export default function AppLayout() {
   const location = useLocation();
+  const { isLoading } = useAuth();
 
   const navNames = [
     { href: "/app/dashboard", name: "Dashboard" },
     { href: "/app/chat", name: "Chat" },
     { href: "/app/appuntamenti", name: "Appuntamenti" },
-    { href: "/app/esercizi", name: "Esercizi" },
+    { href: "/app/allenamento", name: "Schede Allenamento" },
   ];
 
   const currentPage =
@@ -56,54 +59,15 @@ export default function AppLayout() {
           </div>
         </header>
         <div>
-          <Outlet />
+          {isLoading ? (
+            <div className="w-full h-[85vh] flex justify-center items-center">
+              <Loader className="animate-spin" size={60} />
+            </div>
+          ):(
+            <Outlet />
+          )}
         </div>
       </SidebarInset>
     </SidebarProvider>
   )
 }
-  
-/*
-  return isMobile ? (
-    <>
-      <div className="p-6">
-        <div className="space-y-2">
-          {currentPage && (
-            <h1 className="text-3xl font-semibold tracking-tight">
-              {currentPage}
-            </h1>
-          )}
-          <Separator />
-        </div>
-        <Outlet />
-      </div>
-      <LowerBar></LowerBar>
-    </>
-  ) : (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <div className="flex">
-              <div>
-                <Separator orientation="vertical" />
-              </div>
-              <div className="pl-4">
-                {currentPage && (
-                  <h1 className="text-xl font-semibold tracking-tight">
-                    {currentPage}
-                  </h1>
-                )}
-              </div>
-            </div>
-          </div>
-        </header>
-        <div className="px-6">
-          <Outlet />
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
-  )
-*/

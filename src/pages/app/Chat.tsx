@@ -1,14 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
-import './Chat.css'
 import { Button } from "@/components/ui/button";
-
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import "./Chat.css";
+import { Send } from "lucide-react";
 
 export default function ChatPage() {
   return (
-    <div className="w-full h-[85vh] flex items-center justify-center">
-      <div className="w-full h-full flex flex-col shadow-lg overflow-hidden">
+    <div className="w-full h-[89vh] px-6 flex items-center justify-center">
+      <div className="w-full h-full flex flex-col shadow-lg overflow-hidden border border-border rounded-xl">
         <ChatContainer />
       </div>
     </div>
@@ -16,44 +15,15 @@ export default function ChatPage() {
 }
 
 function ChatContainer() {
-  return (
-    <div className="flex flex-col h-full">
-      <HeaderFisio />
-      <MessageList />
-    </div>
-  );
-}
-
-function HeaderFisio() {
-  return (
-    <header className="flex items-center gap-3 p-4 border-b border-neutral-200 bg-white sticky top-0 z-10">
-      <button className="text-neutral-500 hover:text-black transition">
-        <ArrowLeft size={20} />
-      </button>
-      <img
-        src="https://images.unsplash.com/photo-1614280931023-60b734a0a3c3?q=80&w=200&auto=format&fit=crop&crop=faces"
-        alt="Dott.ssa Laura Verdi"
-        className="w-10 h-10 rounded-full object-cover"
-      />
-      <div className="flex-1">
-        <div className="font-semibold leading-tight">Dott.ssa Laura Verdi</div>
-        <div className="text-xs text-neutral-500">Fisioterapista • Online</div>
-      </div>
-    </header>
-  );
-}
-
-function MessageList() {
   const [messages, setMessages] = useState(() => seedMessages());
   const [input, setInput] = useState("");
   const [therapistTyping, setTherapistTyping] = useState(false);
   const scrollerRef = useRef<HTMLDivElement>(null);
+
   const items = useMemo(() => withDateChips(messages), [messages]);
-  
-  function scrollToBottom(ref: any) {
-    if (ref && ref.current) {
-      ref.current.scrollTop = ref.current.scrollHeight;
-    }
+
+  function scrollToBottom(ref: React.RefObject<HTMLDivElement>) {
+    if (ref.current) ref.current.scrollTop = ref.current.scrollHeight;
   }
 
   useEffect(() => {
@@ -87,72 +57,107 @@ function MessageList() {
   }
 
   return (
-    <CardContent className="flex-1 flex flex-col h-full p-0">
-      {/* Area messaggi scrollabile */}
-      <div
-        ref={scrollerRef}
-        className="flex-1 overflow-y-auto p-4 bg-neutral-50"
-        style={{
-          backgroundImage:
-            "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"100\" height=\"100\"><defs><pattern id=\"p\" width=\"10\" height=\"10\" patternUnits=\"userSpaceOnUse\"><circle cx=\"1\" cy=\"1\" r=\"0.5\" fill=\"%23d4d4d4\"/></pattern></defs><rect width=\"100%\" height=\"100%\" fill=\"%23f5f5f5\"/><rect width=\"100%\" height=\"100%\" fill=\"url(%23p)\" opacity=\"0.4\"/></svg>')",
-          backgroundRepeat: "repeat",
-        }}
-      >
-        <div className="space-y-3">
-          {items.map((m: any) =>
-        
-            m.type === "date" ? (
-              <DateChip key={m.id} date={m.date} />
-            ) : (
-              <MessageRow key={m.id} msg={m} />
-            )
-          )}
-          <div className="pt-[80px]"></div>
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* 1) INTESTAZIONE */}
+      <ChatHeader />
 
-          {therapistTyping && (
-            <div className="flex items-end gap-2">
-              <img
-                src="https://images.unsplash.com/photo-1614280931023-60b734a0a3c3?q=80&w=200&auto=format&fit=crop&crop=faces"
-                alt="Dott.ssa Laura Verdi"
-                className="w-8 h-8 rounded-full object-cover"
-              />
-              <div className="max-w-[70%] rounded-2xl bg-white border border-neutral-200 px-3 py-2 text-sm text-neutral-700 inline-flex items-center gap-2">
-                <span className="inline-block w-2 h-2 rounded-full bg-neutral-400 animate-pulse"></span>
-                Sta scrivendo…
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+      {/* 2) AREA MESSAGGI (SOLO QUESTA SCROLLA) */}
+      <ChatMessages
+        items={items}
+        therapistTyping={therapistTyping}
+        scrollerRef={scrollerRef}
+      />
 
-      {/* Barra input fissa in basso */}
-      <div className="border-t border-border p-3 bg-background sticky bottom-2 z-10 flex items-end gap-2">
-        <textarea
-          rows={1}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Scrivi un messaggio…"
-          className="flex-1 resize-none p-3 border border-border rounded-2xl bg-background text-sm focus:ring-2 focus:ring-neutral-300 outline-none"
-        />
-        <Button
-          onClick={handleSend}
-          className="py-6 rounded-full"
-        >
-          Invia
-        </Button>
-      </div>
-    </CardContent>
+      {/* 3) INPUT / COMPOSER */}
+      <ChatComposer
+        value={input}
+        onChange={setInput}
+        onSend={handleSend}
+        onKeyDown={handleKeyDown}
+      />
+    </div>
   );
 }
 
+/* =============================
+   1) HEADER PROFILO DOTTORESSA
+   ============================= */
+function ChatHeader() {
+  return (
+    <header className="flex items-center gap-3 p-4 border-b border-border bg-card shrink-0">
+      <Avatar className="h-11 w-11 rounded-lg">
+        <AvatarFallback className="rounded-4xl">LV</AvatarFallback>
+      </Avatar>
+      <div className="flex-1 min-w-0">
+        <div className="font-semibold leading-tight truncate">Dott.ssa Laura Verdi</div>
+        <div className="text-xs text-neutral-500">Fisioterapista • Online</div>
+      </div>
+    </header>
+  );
+}
+
+/* ==============================================
+   2) LISTA MESSAGGI (CENTRO) — SCROLLABILE
+   ============================================== */
+function ChatMessages({ items, therapistTyping, scrollerRef }: {
+  items: any[];
+  therapistTyping: boolean;
+  scrollerRef: React.RefObject<HTMLDivElement>;
+}) {
+  return (
+    <div
+      ref={scrollerRef}
+      className="flex-1 overflow-y-auto p-4"
+    >
+      <div className="space-y-3">
+        {items.map((m) =>
+          m.type === "date" ? (
+            <DateChip key={m.id} date={m.date} />
+          ) : (
+            <MessageRow key={m.id} msg={m} />
+          )
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ==============================================
+   3) COMPOSER (BASSO) — INPUT MESSAGGIO
+   ============================================== */
+function ChatComposer({ value, onChange, onSend, onKeyDown }: {
+  value: string;
+  onChange: (v: string) => void;
+  onSend: () => void;
+  onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
+}) {
+  return (
+    <div className="border-t border-border p-3 bg-card flex items-center gap-2 shrink-0">
+      <textarea
+        rows={1}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={onKeyDown}
+        placeholder="Scrivi un messaggio…"
+        className="flex-1 resize-none p-3 border border-border rounded-2xl bg-background text-sm focus:ring-2 focus:ring-focus outline-none"
+      />
+      <Button onClick={onSend} variant="outline" className="p-5 rounded-4xl">
+        <Send />
+      </Button>
+    </div>
+  );
+}
+
+/* =====================
+   RENDER DI UN MESSAGGIO
+   ===================== */
 function MessageRow({ msg }: any) {
   const mine = msg.author === "client";
   return (
     <div className={`flex ${mine ? "justify-end" : "justify-start"} items-end gap-2`}>
       {!mine && (
         <img
-          src="https://images.unsplash.com/photo-1614280931023-60b734a0a3c3?q=80&w=200&auto=format&fit=crop&crop=faces"
+          src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop&crop=faces"
           alt="Dott.ssa Laura Verdi"
           className="w-8 h-8 rounded-full object-cover"
         />
@@ -160,12 +165,10 @@ function MessageRow({ msg }: any) {
       <div
         className={
           "max-w-[70%] px-3 py-2 text-sm rounded-2xl " +
-          (mine
-            ? "bg-black text-white rounded-tr-sm"
-            : "bg-white text-neutral-900 border border-neutral-200 rounded-tl-sm")
+          (mine ? "bg-primary text-white rounded-tr-sm" : "bg-secondary text-white border border-border rounded-tl-sm")
         }
       >
-        <div className="whitespace-pre-wrap leading-relaxed">{msg.text}</div>
+        <div className="whitespace-pre-wrap leading-relaxed text-wrap w-max-250">{msg.text}</div>
         <div className={`text-[10px] mt-1 ${mine ? "text-neutral-300" : "text-neutral-400"} text-right`}>
           {formatTime(msg.time)}
         </div>
@@ -185,17 +188,14 @@ function DateChip({ date }: any) {
   const label = relativeDateLabel(date);
   return (
     <div className="flex justify-center">
-      <span className="text-[11px] px-3 py-1 rounded-full bg-white/70 backdrop-blur border border-neutral-200 text-neutral-600">
-        {label}
-      </span>
+      <span className="text-[11px] px-3 py-1 rounded-full bg-white/70 backdrop-blur border border-neutral-200 text-neutral-600 ">{label}</span>
     </div>
   );
 }
 
 /* ---------- Utility ---------- */
-
 function withDateChips(msgs: { id: string; author: string; text: string; time: number }[]) {
-  const out = [];
+  const out: any[] = [];
   let lastKey = "";
   const sorted = [...msgs].sort((a, b) => a.time - b.time);
   for (const m of sorted) {
@@ -222,7 +222,7 @@ function seedMessages() {
     { id: "m-6", author: "client", text: "Quanto costa la prima visita?", time: now - day + 8 * 60 * 1000 },
     { id: "m-7", author: "therapist", text: "Prima visita 50€, sedute successive 40€.", time: now - day + 10 * 60 * 1000 },
     { id: "m-8", author: "client", text: "Oggi pomeriggio ha disponibilità?", time: now - 2 * 60 * 60 * 1000 },
-    { id: "m-9", author: "therapist", text: "Sì, alle 17:30 oppure 18:30. Preferenze?", time: now - 90 * 60 * 1000 },
+    { id: "m-9", author: "therapist", text: "Penso di si, ora controllo.", time: now - 90 * 60 * 1000 },
   ];
 }
 
@@ -244,5 +244,9 @@ function relativeDateLabel(date: string | number | Date) {
 }
 
 function generateReply(text: string) {
-  return "Capito 👍, approfondiamo nella prossima seduta.";
+  const lower = text.toLowerCase();
+  if (lower.includes("costo") || lower.includes("prezzo")) return "Prima visita 50€, sedute successive 40€.";
+  if (lower.includes("orari") || lower.includes("disponibil")) return "Disponibile lun-ven 9:00–18:00. Vuoi prenotare?";
+  if (lower.includes("dolore")) return "Capisco. Da quanto tempo e in quali movimenti lo senti?";
+  return "Capito, procediamo pure.";
 }

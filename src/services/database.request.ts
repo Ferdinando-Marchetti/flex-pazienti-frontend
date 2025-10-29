@@ -10,11 +10,16 @@ export const postNewPlaces = async (placeData: {
   addressCountry: string;
   managementType: string;
 }) => {
-  const response = await api.post('/places/newPlace', placeData);
+  const response = await api.post('/newPlace', placeData);
   return response.data;
 }
 
-export const getPlace = async () => {
-  const response = await api.get(`/places/`)
+export const getSchedeEsercizi = async () => {
+  const response = await api.get(`/pazienti/schede`)
+  return response.data
+}
+
+export const getEsercizi = async (id: string) => {
+  const response = await api.get(`/pazienti/schede/${id}`)
   return response.data
 }

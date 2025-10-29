@@ -76,13 +76,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           try {
             const { data }: AxiosResponse<ApiResponse<{ accessToken: string; user: PatientUser }>> =
               await api.post('/pazienti/auth/refreshToken');
-
-            const { accessToken: newAccess, user } = data.data;
-            setAccessToken(newAccess);
+            const { accessToken, user } = data.data;
+            setAccessToken(accessToken);
             setUser(user);
 
             // Aggiorna token nella richiesta originale e ripeti
-            originalRequest.headers['Authorization'] = `Bearer ${newAccess}`;
+            originalRequest.headers['Authorization'] = `Bearer ${accessToken}`;
             return api(originalRequest);
           } catch (refreshError) {
             console.warn("❌ Refresh token fallito, logout");

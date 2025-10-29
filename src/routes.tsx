@@ -5,21 +5,29 @@ import AppLayout from "./pages/app/AppLayout"
 import DashboardPage from "./pages/app/DashboardPage"
 import ChatPage from "./pages/app/Chat"
 import LoginPage from "./pages/auth/Login"
-import EserciziPage from "./pages/app/Esercizi"
+import SchedeAllenamentoPage from "./pages/app/Allenamento/SchedeAllenamento"
 import AppuntamentiPage from "./pages/app/Appuntamenti"
+import DettagliSchedaPage from "./pages/app/Allenamento/DettagliScheda"
 
 export const router = createBrowserRouter([
-  { path: '', element: <App />, children:[
-    { index: true, element: <Navigate to="/login" replace /> },
-    { path: '/login', element: <LoginPage /> },
-    { path: "/app", children:[
-      { path: '', element: <AppLayout />, children:[
-        { index: true, element: <Navigate to="dashboard" replace /> },
-        { path: "dashboard", element: <DashboardPage /> },
-        { path: "chat", element: <ChatPage /> },
-        { path: "esercizi", element: <EserciziPage /> },
-        { path: "appuntamenti", element: <AppuntamentiPage /> },
-      ]}
-    ]}
-  ]},
+  {
+    path: "",
+    element: <App />,
+    children: [
+      { index: true, element: <Navigate to="/login" replace /> },
+      { path: "login", element: <LoginPage /> },
+      {
+        path: "app",
+        element: <AppLayout />,
+        children: [
+          { index: true, element: <Navigate to="dashboard" replace /> },
+          { path: "dashboard", element: <DashboardPage /> },
+          { path: "appuntamenti", element: <AppuntamentiPage />},
+          { path: "chat", element: <ChatPage /> },
+          { path: "allenamento", element: <SchedeAllenamentoPage /> },
+          { path: "allenamento/:id", element: <DettagliSchedaPage /> },
+        ],
+      },
+    ],
+  },
 ])

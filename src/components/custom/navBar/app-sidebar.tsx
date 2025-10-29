@@ -57,8 +57,8 @@ const data = {
       icon: Bot
     },
     {
-      title: "Esercizi",
-      url: "esercizi",
+      title: "Allenamento",
+      url: "allenamento",
       icon: Bot
     },
   ],
