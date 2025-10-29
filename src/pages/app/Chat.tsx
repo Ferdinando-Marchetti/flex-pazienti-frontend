@@ -1,30 +1,22 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { ArrowLeft } from "lucide-react";
+import './Chat.css'
+
 
 export default function ChatPage() {
   return (
-    <div className="min-h-screen w-full bg-neutral-50 flex flex-col">
-      <Topbar />
-      <ChatContainer />
-    </div>
-  );
-}
-
-function Topbar() {
-  return (
-    <div className="h-16 border-b border-neutral-200 bg-white flex items-center justify-end px-6 gap-3">
-      <span className="text-sm font-medium text-neutral-700">Tu</span>
-      <img
-        src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop&crop=faces"
-        alt="Profilo Utente"
-        className="w-9 h-9 rounded-full object-cover"
-      />
+    <div className="w-full h-[80%] flex items-center justify-center">
+      <Card className="w-full h-full flex flex-col shadow-lg overflow-hidden">
+        <ChatContainer />
+      </Card>
     </div>
   );
 }
 
 function ChatContainer() {
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex flex-col h-full">
       <HeaderFisio />
       <MessageList />
     </div>
@@ -33,7 +25,10 @@ function ChatContainer() {
 
 function HeaderFisio() {
   return (
-    <div className="flex items-center gap-3 p-4 border-b border-neutral-200 bg-white">
+    <header className="flex items-center gap-3 p-4 border-b border-neutral-200 bg-white sticky top-0 z-10">
+      <button className="text-neutral-500 hover:text-black transition">
+        <ArrowLeft size={20} />
+      </button>
       <img
         src="https://images.unsplash.com/photo-1614280931023-60b734a0a3c3?q=80&w=200&auto=format&fit=crop&crop=faces"
         alt="Dott.ssa Laura Verdi"
@@ -43,7 +38,7 @@ function HeaderFisio() {
         <div className="font-semibold leading-tight">Dott.ssa Laura Verdi</div>
         <div className="text-xs text-neutral-500">Fisioterapista • Online</div>
       </div>
-    </div>
+    </header>
   );
 }
 
@@ -51,15 +46,9 @@ function MessageList() {
   const [messages, setMessages] = useState(() => seedMessages());
   const [input, setInput] = useState("");
   const [therapistTyping, setTherapistTyping] = useState(false);
-  const scrollerRef = useRef(null);
+  const scrollerRef = useRef<HTMLDivElement>(null);
 
   const items = useMemo(() => withDateChips(messages), [messages]);
-
-  useEffect(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    el.scrollTop = el.scrollHeight;
-  }, [messages, therapistTyping]);
 
   function handleSend() {
     const text = input.trim();
@@ -80,7 +69,7 @@ function MessageList() {
     }, 900);
   }
 
-  function handleKeyDown(e) {
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -88,10 +77,11 @@ function MessageList() {
   }
 
   return (
-    <div className="flex-1 flex flex-col">
+    <CardContent className="flex-1 flex flex-col h-full p-0">
+      {/* Area messaggi scrollabile */}
       <div
         ref={scrollerRef}
-        className="flex-1 overflow-y-auto p-4"
+        className="flex-1 overflow-y-auto p-4 bg-neutral-50"
         style={{
           backgroundImage:
             "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"100\" height=\"100\"><defs><pattern id=\"p\" width=\"10\" height=\"10\" patternUnits=\"userSpaceOnUse\"><circle cx=\"1\" cy=\"1\" r=\"0.5\" fill=\"%23d4d4d4\"/></pattern></defs><rect width=\"100%\" height=\"100%\" fill=\"%23f5f5f5\"/><rect width=\"100%\" height=\"100%\" fill=\"url(%23p)\" opacity=\"0.4\"/></svg>')",
@@ -99,7 +89,7 @@ function MessageList() {
         }}
       >
         <div className="space-y-3">
-          {items.map((m) =>
+          {items.map((m: any) =>
             m.type === "date" ? (
               <DateChip key={m.id} date={m.date} />
             ) : (
@@ -123,7 +113,8 @@ function MessageList() {
         </div>
       </div>
 
-      <div className="border-t border-neutral-200 p-3 bg-white flex items-end gap-2">
+      {/* Barra input fissa in basso */}
+      <div className="border-t border-neutral-200 p-3 bg-white sticky bottom-0 z-10 flex items-end gap-2">
         <textarea
           rows={1}
           value={input}
@@ -139,11 +130,11 @@ function MessageList() {
           Invia
         </button>
       </div>
-    </div>
+    </CardContent>
   );
 }
 
-function MessageRow({ msg }) {
+function MessageRow({ msg }: any) {
   const mine = msg.author === "client";
   return (
     <div className={`flex ${mine ? "justify-end" : "justify-start"} items-end gap-2`}>
@@ -178,7 +169,7 @@ function MessageRow({ msg }) {
   );
 }
 
-function DateChip({ date }) {
+function DateChip({ date }: any) {
   const label = relativeDateLabel(date);
   return (
     <div className="flex justify-center">
@@ -189,7 +180,9 @@ function DateChip({ date }) {
   );
 }
 
-function withDateChips(msgs) {
+/* ---------- Utility ---------- */
+
+function withDateChips(msgs: { id: string; author: string; text: string; time: number }[]) {
   const out = [];
   let lastKey = "";
   const sorted = [...msgs].sort((a, b) => a.time - b.time);
@@ -211,28 +204,25 @@ function seedMessages() {
   return [
     { id: "m-1", author: "therapist", text: "Ciao! Sono la Dott.ssa Laura Verdi. Come posso aiutarti?", time: now - 7 * day },
     { id: "m-2", author: "client", text: "Buongiorno, ho dolore alla spalla quando alzo il braccio.", time: now - 7 * day + 5 * 60 * 1000 },
-    { id: "m-3", author: "therapist", text: "Capisco. Da quanto tempo lo avverti? È continuo o solo in alcuni movimenti?", time: now - 7 * day + 10 * 60 * 1000 },
-
+    { id: "m-3", author: "therapist", text: "Capisco. Da quanto tempo lo avverti?", time: now - 7 * day + 10 * 60 * 1000 },
     { id: "m-4", author: "client", text: "Da tre giorni, soprattutto la sera.", time: now - 2 * day + 14 * 60 * 1000 },
-    { id: "m-5", author: "therapist", text: "Nel frattempo applica ghiaccio 10-15 minuti. Possiamo programmare una valutazione.", time: now - 2 * day + 20 * 60 * 1000 },
-
+    { id: "m-5", author: "therapist", text: "Nel frattempo applica ghiaccio 10-15 minuti.", time: now - 2 * day + 20 * 60 * 1000 },
     { id: "m-6", author: "client", text: "Quanto costa la prima visita?", time: now - day + 8 * 60 * 1000 },
     { id: "m-7", author: "therapist", text: "Prima visita 50€, sedute successive 40€.", time: now - day + 10 * 60 * 1000 },
-
     { id: "m-8", author: "client", text: "Oggi pomeriggio ha disponibilità?", time: now - 2 * 60 * 60 * 1000 },
     { id: "m-9", author: "therapist", text: "Sì, alle 17:30 oppure 18:30. Preferenze?", time: now - 90 * 60 * 1000 },
   ];
 }
 
-function formatTime(ts) {
+function formatTime(ts: string | number | Date) {
   const d = new Date(ts);
   return d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
 }
 
-function relativeDateLabel(date) {
+function relativeDateLabel(date: string | number | Date) {
   const d = new Date(date);
   const today = new Date();
-  const dd = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate());
+  const dd = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate());
   const t0 = dd(today).getTime();
   const d0 = dd(d).getTime();
   const diff = Math.round((t0 - d0) / (24 * 60 * 60 * 1000));
@@ -241,4 +231,6 @@ function relativeDateLabel(date) {
   return d.toLocaleDateString("it-IT", { day: "2-digit", month: "long" });
 }
 
-
+function generateReply(text: string) {
+  return "Capito 👍, approfondiamo nella prossima seduta.";
+}

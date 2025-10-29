@@ -1,0 +1,3 @@
+.no-scroll, .no-scroll body, .no-scroll html {
+  overflow: hidden;
+}

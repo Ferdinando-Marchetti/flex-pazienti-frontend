@@ -6,6 +6,7 @@ import {
 } from '@/components/ui/sidebar'
 import { Separator } from "@/components/ui/separator";
 import { AppSidebar } from "@/components/custom/navBar/app-sidebar";
+import { useEffect } from "react";
 
 export default function AppLayout() {
   const location = useLocation();
@@ -22,6 +23,14 @@ export default function AppLayout() {
       location.pathname.startsWith(`${nav.href}/`
     )
   )?.name || "";
+
+  useEffect(() => {
+    if (location.pathname === "/app/chat") {
+      document.body.classList.add("no-scroll");
+    } else {
+      document.body.classList.remove("no-scroll");
+    }
+  }, [location]);
 
   return (
     <SidebarProvider>
