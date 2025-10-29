@@ -2,14 +2,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import './Chat.css'
+import { Button } from "@/components/ui/button";
 
 
 export default function ChatPage() {
   return (
-    <div className="w-full h-[90vh] flex items-center justify-center">
-      <Card className="w-full h-full flex flex-col shadow-lg overflow-hidden">
+    <div className="w-full h-[85vh] flex items-center justify-center">
+      <div className="w-full h-full flex flex-col shadow-lg overflow-hidden">
         <ChatContainer />
-      </Card>
+      </div>
     </div>
   );
 }
@@ -47,8 +48,17 @@ function MessageList() {
   const [input, setInput] = useState("");
   const [therapistTyping, setTherapistTyping] = useState(false);
   const scrollerRef = useRef<HTMLDivElement>(null);
-
   const items = useMemo(() => withDateChips(messages), [messages]);
+  
+  function scrollToBottom(ref: any) {
+    if (ref && ref.current) {
+      ref.current.scrollTop = ref.current.scrollHeight;
+    }
+  }
+
+  useEffect(() => {
+    scrollToBottom(scrollerRef);
+  }, [messages]);
 
   function handleSend() {
     const text = input.trim();
@@ -90,12 +100,14 @@ function MessageList() {
       >
         <div className="space-y-3">
           {items.map((m: any) =>
+        
             m.type === "date" ? (
               <DateChip key={m.id} date={m.date} />
             ) : (
               <MessageRow key={m.id} msg={m} />
             )
           )}
+          <div className="pt-[80px]"></div>
 
           {therapistTyping && (
             <div className="flex items-end gap-2">
@@ -114,21 +126,21 @@ function MessageList() {
       </div>
 
       {/* Barra input fissa in basso */}
-      <div className="border-t border-neutral-200 p-3 bg-white sticky bottom-0 z-10 flex items-end gap-2">
+      <div className="border-t border-border p-3 bg-background sticky bottom-2 z-10 flex items-end gap-2">
         <textarea
           rows={1}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Scrivi un messaggio…"
-          className="flex-1 resize-none p-3 border border-neutral-200 rounded-2xl bg-white text-sm focus:ring-2 focus:ring-neutral-300 outline-none"
+          className="flex-1 resize-none p-3 border border-border rounded-2xl bg-background text-sm focus:ring-2 focus:ring-neutral-300 outline-none"
         />
-        <button
+        <Button
           onClick={handleSend}
-          className="px-4 py-2 rounded-xl bg-black text-white hover:opacity-90 active:scale-[0.98] transition"
+          className="py-6 rounded-full"
         >
           Invia
-        </button>
+        </Button>
       </div>
     </CardContent>
   );

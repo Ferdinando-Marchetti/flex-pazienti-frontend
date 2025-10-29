@@ -53,7 +53,7 @@ export default function AppLayout() {
             </div>
           </div>
         </header>
-        <div className="px-6">
+        <div>
           <Outlet />
         </div>
       </SidebarInset>
