@@ -56,6 +56,16 @@ const data = {
       url: "chat",
       icon: Bot
     },
+    {
+      title: "Appuntamenti",
+      url: "appuntamenti",
+      icon: Bot
+    },
+    {
+      title: "Esercizi",
+      url: "esercizi",
+      icon: Bot
+    },
   ],
   navSecondary: [
     {
