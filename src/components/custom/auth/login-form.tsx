@@ -28,21 +28,17 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
       setLoading(true);
       try {
         // ✅ Verifica email con checkEmail
-        await checkEmail(email);
-      } catch (err: any) {
-        // Analizziamo il codice di stato per decidere la fase successiva
-        const status = err?.response?.status;
-        if (status === 409) {
-          // ✅ 409 → già registrato → login
+        const res = await checkEmail(email);
+        if((res as any).statusCode === 409){
           setStep("password");
-        } else if (status === 202) {
-          // ✅ 202 → registrazione da completare
+        }else if((res as any).statusCode === 202){
           setStep("register");
-        } else {
-          setError(err?.response?.data?.message || "Errore sconosciuto.");
+        }else {
+          setError("Errore sconosciuto.");
         }
-      } finally {
-        setLoading(false);
+        setLoading(false)
+      } catch (err: any) {
+        console.log(err)  
       }
     } 
     else if (step === "password") {

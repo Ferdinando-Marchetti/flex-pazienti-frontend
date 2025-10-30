@@ -143,7 +143,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // --- Verifica email ---
   const checkEmail = async (email: string) => {
-    await api.post('/pazienti/auth/check-email', { email });
+    const res = await api.post('/pazienti/auth/check-email', { email });
+    return res.data
   };
 
   // --- Login ---
