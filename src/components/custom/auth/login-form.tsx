@@ -47,7 +47,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
         setLoading(true);
         await login(email, password);
       } catch (err: any) {
-        setError(err?.response?.data?.message || "Credenziali non valide");
+        setError("Credenziali non valide");
       } finally {
         setLoading(false);
       }

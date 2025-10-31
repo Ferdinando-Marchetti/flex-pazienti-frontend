@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { getEsercizi } from "@/services/database.request"
+import { createSessione } from "@/services/database.request"
 import {
   Card,
   CardHeader,
@@ -11,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Play } from "lucide-react"
 
 export default function DettagliSchedaPage() {
   const { id } = useParams()
@@ -20,6 +21,7 @@ export default function DettagliSchedaPage() {
   const [scheda, setScheda] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [loadingSessione, setLoadingSessione] = useState(false)
 
   useEffect(() => {
     if (!id) {
@@ -39,6 +41,25 @@ export default function DettagliSchedaPage() {
       setError("Errore durante il caricamento della scheda.")
     } finally {
       setLoading(false)
+    }
+  }
+
+  const avviaSessione = async () => {
+    if (!scheda) return
+    try {
+      setLoadingSessione(true)
+      const res = await createSessione({
+        id: scheda.cliente_id, // o utente loggato
+        fisioterapista_id: scheda.fisioterapista_id,
+        scheda_id: scheda.id,
+      })
+      const sessioneId = res.data.data.sessioneId
+      navigate(`/app/sessioni/${sessioneId}`)
+    } catch (err) {
+      console.error("Errore creazione sessione:", err)
+      alert("Errore durante l’avvio della sessione.")
+    } finally {
+      setLoadingSessione(false)
     }
   }
 
@@ -66,7 +87,7 @@ export default function DettagliSchedaPage() {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold">{scheda.nome}</h1>
           <p className="text-sm text-muted-foreground">
@@ -77,10 +98,18 @@ export default function DettagliSchedaPage() {
             {scheda.fisioterapista_cognome}
           </p>
         </div>
-        <Button variant="outline" onClick={() => navigate("/app/allenamento")}>
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Torna alle schede
-        </Button>
+
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => navigate("/app/allenamento")}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Torna alle schede
+          </Button>
+
+          <Button onClick={avviaSessione} disabled={loadingSessione}>
+            <Play className="w-4 h-4 mr-2" />
+            {loadingSessione ? "Avvio..." : "Avvia sessione"}
+          </Button>
+        </div>
       </div>
 
       <Separator />
