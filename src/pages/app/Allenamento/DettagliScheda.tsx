@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
-import { useParams, useNavigate } from "react-router-dom"
-import { getEsercizi } from "@/services/database.request"
+import { useParams, useNavigate, Link } from "react-router-dom"
+import { getEsercizi, listSessioniByCliente } from "@/services/database.request"
 import { createSessione } from "@/services/database.request"
 import {
   Card,
@@ -12,7 +12,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ArrowLeft, Play } from "lucide-react"
+import { ArrowLeft, ArrowRight, Play } from "lucide-react"
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 export default function DettagliSchedaPage() {
   const { id } = useParams()
@@ -22,12 +23,14 @@ export default function DettagliSchedaPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [loadingSessione, setLoadingSessione] = useState(false)
+  const [sessioni, setSessioni] = useState<any[]>([])
 
   useEffect(() => {
     if (!id) {
       navigate("/app/allenamento")
     } else {
       loadScheda(id)
+      loadSessioni()
     }
   }, [id])
 
@@ -44,16 +47,25 @@ export default function DettagliSchedaPage() {
     }
   }
 
+  const loadSessioni = async () => {
+    try {
+      const res = await listSessioniByCliente() // id utente loggato
+      console.log(res.data)
+      setSessioni(res.data)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const avviaSessione = async () => {
     if (!scheda) return
     try {
       setLoadingSessione(true)
       const res = await createSessione({
-        id: scheda.cliente_id, // o utente loggato
-        fisioterapista_id: scheda.fisioterapista_id,
+        fisioterapista_id: scheda.id_fisioterapista,
         scheda_id: scheda.id,
       })
-      const sessioneId = res.data.data.sessioneId
+      const sessioneId = res.data.sessioneId
       navigate(`/app/sessioni/${sessioneId}`)
     } catch (err) {
       console.error("Errore creazione sessione:", err)
@@ -116,7 +128,7 @@ export default function DettagliSchedaPage() {
 
       {/* Note */}
       {scheda.note && (
-        <Alert className="bg-blue-50 border-blue-400 text-blue-800">
+        <Alert className="bg-card border-border">
           <AlertDescription>{scheda.note}</AlertDescription>
         </Alert>
       )}
@@ -144,6 +156,50 @@ export default function DettagliSchedaPage() {
           </div>
         ) : (
           <p className="text-muted-foreground">Nessun esercizio presente.</p>
+        )}
+      </div>
+      {/* Lista sessioni */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold">Sessioni Allenamento</h2>
+        {sessioni.length === 0 ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow>
+                <TableCell className="text-center italic cursor-default"> Non ci sono sessioni di allenamento </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead>Data</TableHead>
+                <TableHead>Fisioterapista</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sessioni.map((s) => (
+                <TableRow key={s.id}>
+                  <TableCell>{s.id}</TableCell>
+                  <TableCell>{new Date(s.data_sessione).toLocaleDateString()}</TableCell>
+                  <TableCell>{s.fisioterapista_nome} {s.fisioterapista_cognome}</TableCell>
+                  <TableCell>
+                    <Button asChild>
+                      <Link to={`/app/sessioni/${s.id}`}>
+                        Dettagli
+                        <ArrowRight />
+                      </Link>
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         )}
       </div>
     </div>

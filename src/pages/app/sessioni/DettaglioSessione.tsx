@@ -23,7 +23,12 @@ export default function DettaglioSessionePage() {
   const [sessione, setSessione] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [indice, setIndice] = useState(0)
-  const [sondaggio, setSondaggio] = useState({ difficolta: "", feedback: "" })
+  const [sondaggio, setSondaggio] = useState({
+    dolore: "",
+    forza: "",
+    mobilita: "",
+    feedback: "",
+  })
   const [completata, setCompletata] = useState(false)
 
   useEffect(() => {
@@ -48,7 +53,7 @@ export default function DettaglioSessionePage() {
 
   const inviaSondaggio = async () => {
     await saveSondaggio(Number(id), sondaggio)
-    navigate("/app/sessioni")
+    navigate("/app/allenamento/")
   }
 
   if (loading)
@@ -56,25 +61,74 @@ export default function DettaglioSessionePage() {
 
   if (completata)
     return (
-      <div className="p-6 space-y-4">
+      <div className="p-6 space-y-6">
         <h1 className="text-2xl font-semibold">Sessione completata 🎉</h1>
-        <p>Lascia un tuo feedback:</p>
+        <p>Valuta la tua condizione al termine della sessione:</p>
 
-        <Select onValueChange={(v) => setSondaggio({ ...sondaggio, difficolta: v })}>
-          <SelectTrigger>
-            <SelectValue placeholder="Difficoltà percepita" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="facile">Facile</SelectItem>
-            <SelectItem value="media">Media</SelectItem>
-            <SelectItem value="difficile">Difficile</SelectItem>
-          </SelectContent>
-        </Select>
+        {/* Valutazione Dolore */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Dolore (1-10)</label>
+          <Select
+            onValueChange={(v) => setSondaggio({ ...sondaggio, dolore: v })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Seleziona livello dolore" />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 10 }, (_, i) => (
+                <SelectItem key={i + 1} value={String(i + 1)}>
+                  {i + 1}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
+        {/* Valutazione Forza */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Forza (1-10)</label>
+          <Select
+            onValueChange={(v) => setSondaggio({ ...sondaggio, forza: v })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Seleziona livello forza" />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 10 }, (_, i) => (
+                <SelectItem key={i + 1} value={String(i + 1)}>
+                  {i + 1}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Valutazione Mobilità */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Mobilità (1-10)</label>
+          <Select
+            onValueChange={(v) => setSondaggio({ ...sondaggio, mobilita: v })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Seleziona livello mobilità" />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 10 }, (_, i) => (
+                <SelectItem key={i + 1} value={String(i + 1)}>
+                  {i + 1}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Feedback testuale */}
         <Textarea
-          placeholder="Come ti sei sentito durante l’allenamento?"
+          placeholder="Aggiungi eventuali commenti o sensazioni..."
           value={sondaggio.feedback}
-          onChange={(e) => setSondaggio({ ...sondaggio, feedback: e.target.value })}
+          onChange={(e) =>
+            setSondaggio({ ...sondaggio, feedback: e.target.value })
+          }
         />
 
         <Button onClick={inviaSondaggio} className="mt-2">

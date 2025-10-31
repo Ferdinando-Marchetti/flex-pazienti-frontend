@@ -12,16 +12,19 @@ export const getEsercizi = async (id: string) => {
 }
 
 //Sessione
-export const createSessione = async (data: {
-  id: number
-  fisioterapista_id: number
-  scheda_id: number
+export const createSessione = async (sessionData: {
+  fisioterapista_id: number;
+  scheda_id: number;
 }) => {
-  return api.post(`/pazienti/sessioni`, data)
+  const response = await api.post(`/pazienti/sessioni`, sessionData)
+  
+  return response.data
 }
 
-export const listSessioniByCliente = async (id: number) => {
-  return api.post(`/pazienti/sessioni/lista`, { id })
+export const listSessioniByCliente = async () => {
+  const response = await api.get(`/pazienti/sessioni/lista`)
+
+  return response.data
 }
 
 export const getSessioneById = async (id: string | number) => {
