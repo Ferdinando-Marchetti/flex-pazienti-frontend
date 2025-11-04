@@ -6,7 +6,7 @@ import { Send } from "lucide-react";
 
 export default function ChatPage() {
   return (
-    <div className="w-full h-[89vh] px-6 flex items-center justify-center">
+    <div className="w-full h-[80vh] px-6 flex items-center justify-center">
       <div className="w-full h-full flex flex-col shadow-lg overflow-hidden border border-border rounded-xl">
         <ChatContainer />
       </div>

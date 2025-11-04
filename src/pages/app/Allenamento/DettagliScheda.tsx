@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
-import { useParams, useNavigate } from "react-router-dom"
-import { getEsercizi } from "@/services/database.request"
+import { useParams, useNavigate, Link } from "react-router-dom"
+import { getEsercizi, listSessioniByCliente } from "@/services/database.request"
+import { createSessione } from "@/services/database.request"
 import {
   Card,
   CardHeader,
@@ -11,7 +12,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, ArrowRight, Play } from "lucide-react"
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 export default function DettagliSchedaPage() {
   const { id } = useParams()
@@ -20,12 +22,15 @@ export default function DettagliSchedaPage() {
   const [scheda, setScheda] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [loadingSessione, setLoadingSessione] = useState(false)
+  const [sessioni, setSessioni] = useState<any[]>([])
 
   useEffect(() => {
     if (!id) {
       navigate("/app/allenamento")
     } else {
       loadScheda(id)
+      loadSessioni()
     }
   }, [id])
 
@@ -39,6 +44,34 @@ export default function DettagliSchedaPage() {
       setError("Errore durante il caricamento della scheda.")
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadSessioni = async () => {
+    try {
+      const res = await listSessioniByCliente() // id utente loggato
+      console.log(res.data)
+      setSessioni(res.data)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const avviaSessione = async () => {
+    if (!scheda) return
+    try {
+      setLoadingSessione(true)
+      const res = await createSessione({
+        fisioterapista_id: scheda.id_fisioterapista,
+        scheda_id: scheda.id,
+      })
+      const sessioneId = res.data.sessioneId
+      navigate(`/app/sessioni/${sessioneId}`)
+    } catch (err) {
+      console.error("Errore creazione sessione:", err)
+      alert("Errore durante l’avvio della sessione.")
+    } finally {
+      setLoadingSessione(false)
     }
   }
 
@@ -66,7 +99,7 @@ export default function DettagliSchedaPage() {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold">{scheda.nome}</h1>
           <p className="text-sm text-muted-foreground">
@@ -77,17 +110,25 @@ export default function DettagliSchedaPage() {
             {scheda.fisioterapista_cognome}
           </p>
         </div>
-        <Button variant="outline" onClick={() => navigate("/app/allenamento")}>
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Torna alle schede
-        </Button>
+
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => navigate("/app/allenamento")}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Torna alle schede
+          </Button>
+
+          <Button onClick={avviaSessione} disabled={loadingSessione}>
+            <Play className="w-4 h-4 mr-2" />
+            {loadingSessione ? "Avvio..." : "Avvia sessione"}
+          </Button>
+        </div>
       </div>
 
       <Separator />
 
       {/* Note */}
       {scheda.note && (
-        <Alert className="bg-blue-50 border-blue-400 text-blue-800">
+        <Alert className="bg-card border-border">
           <AlertDescription>{scheda.note}</AlertDescription>
         </Alert>
       )}
@@ -115,6 +156,50 @@ export default function DettagliSchedaPage() {
           </div>
         ) : (
           <p className="text-muted-foreground">Nessun esercizio presente.</p>
+        )}
+      </div>
+      {/* Lista sessioni */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold">Sessioni Allenamento</h2>
+        {sessioni.length === 0 ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow>
+                <TableCell className="text-center italic cursor-default"> Non ci sono sessioni di allenamento </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead>Data</TableHead>
+                <TableHead>Fisioterapista</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sessioni.map((s) => (
+                <TableRow key={s.id}>
+                  <TableCell>{s.id}</TableCell>
+                  <TableCell>{new Date(s.data_sessione).toLocaleDateString()}</TableCell>
+                  <TableCell>{s.fisioterapista_nome} {s.fisioterapista_cognome}</TableCell>
+                  <TableCell>
+                    <Button asChild>
+                      <Link to={`/app/sessioni/${s.id}`}>
+                        Dettagli
+                        <ArrowRight />
+                      </Link>
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         )}
       </div>
     </div>
