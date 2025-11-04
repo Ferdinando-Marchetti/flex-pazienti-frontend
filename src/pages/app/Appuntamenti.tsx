@@ -1,5 +1,5 @@
 /*
-  
+  Richiedi l'appuntamento con dati del trattamento, fai visualizzare direttamente il nome del fisioterapista e sistema la data di quando clicchi
 */
 
 import { useEffect, useState } from "react" 
