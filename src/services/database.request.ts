@@ -56,3 +56,20 @@ export const updateEsercizioSessione = async (
     ...payload,
   })
 }
+
+// Michele
+// richiesta trattamenti api.get(`/pazienti/trattamenti`)
+// richiesta appuntamenti api.get(`/pazienti/appuntamenti`)
+/* richiesta appuntamenti api.post(`/pazienti/creaAppuntamento`, ...)
+
+  { trattamento_id: dato , data_appuntamento: dato, ora_appuntamento: dato }
+
+*/
+
+// Daniele
+// richiesta messaggi api.get(`/pazienti/messaggi`)
+/* richiesta messaggi api.post(`/pazienti/creaMessaggi`,...)
+
+  { trattamento_id, testo }
+   
+*/
