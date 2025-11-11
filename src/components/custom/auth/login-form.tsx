@@ -143,18 +143,14 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
 
           <div className="bg-muted relative hidden md:block">
             <img
-              src="https://images.unsplash.com/photo-1716996236807-a45afca9957a?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=754"
+              src="logo.png"
               alt="Image"
-              className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+              height="100%"
+              className="absolute inset-0 h-full w-full object-cover"
             />
           </div>
         </CardContent>
       </Card>
-      <FieldDescription className="px-6 text-center">
-        By clicking continue, you agree to our{" "}
-        <a href="#">Terms of Service</a> and{" "}
-        <a href="#">Privacy Policy</a>.
-      </FieldDescription>
     </div>
   );
 }

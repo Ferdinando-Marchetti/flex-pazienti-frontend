@@ -2,7 +2,6 @@ import { createBrowserRouter, Navigate } from "react-router-dom"
 
 import App from "./App"
 import AppLayout from "./pages/app/AppLayout"
-import DashboardPage from "./pages/app/DashboardPage"
 import ChatPage from "./pages/app/Chat"
 import LoginPage from "./pages/auth/Login"
 import SchedeAllenamentoPage from "./pages/app/Allenamento/SchedeAllenamento"
@@ -10,6 +9,7 @@ import AppuntamentiPage from "./pages/app/Appuntamenti"
 import DettagliSchedaPage from "./pages/app/Allenamento/DettagliScheda"
 import RiepilogoSessionePage from "./pages/app/sessioni/RiepilogoSessionePage"
 import NuovaSessione from "./pages/app/sessioni/NuovaSessione"
+import PaginaBenvenuto from "./pages/app/PaginaBenvenuto"
 
 export const router = createBrowserRouter([
   {
@@ -22,8 +22,8 @@ export const router = createBrowserRouter([
         path: "app",
         element: <AppLayout />,
         children: [
-          { index: true, element: <Navigate to="dashboard" replace /> },
-          { path: "dashboard", element: <DashboardPage /> },
+          { index: true, element: <Navigate to="welcome" replace /> },
+          { path: "welcome", element: <PaginaBenvenuto /> },
           { path: "appuntamenti", element: <AppuntamentiPage />},
           { path: "chat", element: <ChatPage /> },
           { path: "allenamento", element: <SchedeAllenamentoPage /> },

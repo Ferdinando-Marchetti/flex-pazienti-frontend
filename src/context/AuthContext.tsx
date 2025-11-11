@@ -156,7 +156,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       setAccessToken(accessToken);
       setUser(user);
-      navigate('/app/dashboard');
+      navigate('/app/welcome');
     } catch (error) {
       throw error;
     }

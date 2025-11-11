@@ -27,11 +27,6 @@ import { ModeToggle } from "./theme-toggler"
 const data = {
   navMain: [
     {
-      title: "Dashboard",
-      url: "dashboard",
-      icon: LayoutDashboard,
-    },
-    {
       title: "Chat",
       url: "chat",
       icon: MessageCircle

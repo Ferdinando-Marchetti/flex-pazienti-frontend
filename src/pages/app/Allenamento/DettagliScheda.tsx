@@ -3,11 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom"
 import { getEsercizi, listSessioniByCliente } from "@/services/database.request"
 import { createSessione } from "@/services/database.request"
 import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
+  Card
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
