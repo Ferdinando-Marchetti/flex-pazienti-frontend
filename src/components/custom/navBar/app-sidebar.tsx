@@ -2,15 +2,16 @@
 
 import * as React from "react"
 import {
-  Bot,
+  BicepsFlexed,
+  CalendarClock,
   Command,
+  LayoutDashboard,
   LifeBuoy,
+  MessageCircle,
   Send,
-  SquareTerminal,
 } from "lucide-react"
 
 import { NavMain } from "@/components/custom/navBar/nav-main"
-import { NavSecondary } from "@/components/custom/navBar/nav-secondary"
 import { NavUser } from "@/components/custom/navBar/nav-user"
 import {
   Sidebar,
@@ -21,59 +22,31 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { ModeToggle } from "./theme-toggler"
 
 const data = {
   navMain: [
     {
       title: "Dashboard",
       url: "dashboard",
-      icon: SquareTerminal,
-      /*
-      isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
-      */
+      icon: LayoutDashboard,
     },
     {
       title: "Chat",
       url: "chat",
-      icon: Bot
+      icon: MessageCircle
     },
     {
       title: "Appuntamenti",
       url: "appuntamenti",
-      icon: Bot
+      icon: CalendarClock
     },
     {
       title: "Allenamento",
       url: "allenamento",
-      icon: Bot
+      icon: BicepsFlexed
     },
-  ],
-  navSecondary: [
-    {
-      title: "Support",
-      url: "#",
-      icon: LifeBuoy,
-    },
-    {
-      title: "Feedback",
-      url: "#",
-      icon: Send,
-    }
-  ],
+  ]
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -83,12 +56,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg">
-              <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                <Command className="size-4" />
+              <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-xl" >
+                <img src='/logo.png' style={{borderRadius: '20em'}}></img>
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">Flexifisio</span>
-                <span className="truncate text-xs">Enterprise</span>
+                <span className="truncate font-medium">FlexiFisio</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -96,9 +68,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
+        <ModeToggle></ModeToggle>
         <NavUser />
       </SidebarFooter>
     </Sidebar>

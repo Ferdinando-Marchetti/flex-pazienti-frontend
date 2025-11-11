@@ -19,7 +19,6 @@ export default function SchedeAllenamentoPage() {
   const loadSchede = async () => {
     try {
       const res = await getSchedeEsercizi()
-      console.log(res)
       setSchedeEsercizi(res.data)
     } catch (err) {
       console.error("Errore caricamento schede:", err)

@@ -94,11 +94,6 @@ export default function AppuntamentiPage() {
     }
   }
 
-  const eliminaRichiestaAppuntamento = async (id: number) => {
-    console.log("Elimina richiesta ID:", id)
-    alert("Funzione non ancora implementata.")
-  }
-
   const dateConfermate = appuntamentiConfermati.map(app =>
     new Date(app.data_appuntamento).toDateString()
   )
@@ -132,7 +127,7 @@ export default function AppuntamentiPage() {
   }
 
 return (
-  <div className="flex flex-col items-center justify-center p-6 space-y-8">
+  <div className="flex items-center justify-center p-6 space-y-8 gap-4">
     {/* 🔹 Dialog: nuova richiesta */}
     <Dialog open={isRichiestaOpen} onOpenChange={setIsRichiestaOpen}>
       <DialogContent className="bg-card border border-border text-foreground shadow-2xl rounded-xl">
@@ -177,7 +172,7 @@ return (
     </Dialog>
 
     {/* 🔹 Calendario principale */}
-    <Card className="w-full bg-card border border-border rounded-2xl shadow-md">
+    <Card className="w-1/3 h-full bg-card border border-border rounded-2xl shadow-md">
       <CardHeader className="text-center pb-2">
         <CardTitle className="text-lg font-semibold text-foreground">
           Calendario Appuntamenti
@@ -188,7 +183,7 @@ return (
           mode="single"
           selected={selectedDay || undefined}
           onDayClick={handleDayClick}
-          className="rounded-md border border-border shadow-sm w-full bg-muted text-foreground"
+          className="rounded-md border border-border shadow-sm w-full"
           modifiers={{
             selezionato: (day: any) =>
               !!selectedDay && day.toDateString() === selectedDay?.toDateString(),
@@ -197,17 +192,17 @@ return (
           }}
           modifiersStyles={{
             selezionato: {
-              backgroundColor: "hsl(var(--muted-foreground))",
-              color: "white",
-              borderRadius: "50%",
+              backgroundColor: "var(--primary)",
+              color: "black",
+              borderRadius: "8px",
             },
             confermato: {
-              backgroundColor: "hsl(var(--success))",
+              backgroundColor: "",
               color: "white",
               borderRadius: "50%",
             },
             daConfermare: {
-              backgroundColor: "hsl(var(--warning))",
+              backgroundColor: "",
               color: "black",
               borderRadius: "50%",
             },
@@ -216,102 +211,71 @@ return (
       </CardContent>
     </Card>
 
-    {/* 🔹 Sezione elenchi */}
-    <div className="flex flex-col md:flex-row gap-6 w-full">
+    <Card className="w-2/3 h-full bg-card border border-border rounded-xl shadow-lg">
+        <CardContent className="p-2">
+            <div className="p-4 border-b border-border/80">
+                {/* Utilizza text-destructive (variabile di warning/errore) per alta attenzione */}
+                <CardTitle className="text-lg font-semibold text-center text-destructive mb-4">
+                    Appuntamenti Non Confermati
+                </CardTitle>
 
-      {/* ✅ Confermati */}
-      <Card className="flex-1 bg-card border border-border rounded-2xl shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-base text-center font-medium text-foreground">
-            Appuntamenti Confermati
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm space-y-2">
-          {appuntamentiConfermati.length === 0 ? (
-            <p className="text-center text-muted-foreground">
-              Nessun appuntamento confermato.
-            </p>
-          ) : (
-            <ul className="divide-y divide-border">
-              {appuntamentiConfermati.map((app, i) => (
-                <li
-                  key={i}
-                  className="py-3 flex items-center justify-between px-3 rounded-md hover:bg-primary/5 transition"
-                >
-                  <div>
-                    <p className="font-medium text-foreground">Appuntamento</p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(app.data_appuntamento).toLocaleDateString()} •{" "}
-                      {app.ora_appuntamento}
+                {appuntamentiDaConfermare.length === 0 ? (
+                    <p className="text-center text-sm text-muted-foreground pt-2 pb-2">
+                        Nessuna richiesta in sospeso.
                     </p>
-                  </div>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    asChild
-                    className="text-sm"
-                  >
-                    <Link to="/app/chat">Chat</Link>
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
+                ) : (
+                    <ul className="divide-y divide-border/60">
+                        {appuntamentiDaConfermare.map((app, i) => (
+                            <li
+                                key={i}
+                                // Utilizza hover:bg-destructive/10 per un effetto visivo che richiama il colore del titolo
+                                className="py-3 px-4 flex items-center justify-between transition hover:bg-destructive/10"
+                            >
+                                <div>
+                                    <p className="font-medium text-foreground">Appuntamento</p>
+                                    <p className="text-sm text-muted-foreground mt-0.5">
+                                        {new Date(app.data_appuntamento).toLocaleDateString('it-IT')} •{" "}
+                                        {app.ora_appuntamento}
+                                    </p>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </div>
 
-      {/* ⏳ Da confermare */}
-      <Card className="flex-1 bg-card border border-border rounded-2xl shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-base text-center font-medium text-foreground">
-            Appuntamenti da Confermare
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm space-y-2">
-          {appuntamentiDaConfermare.length === 0 ? (
-            <p className="text-center text-muted-foreground">
-              Nessuna richiesta in sospeso.
-            </p>
-          ) : (
-            <ul className="divide-y divide-border">
-              {appuntamentiDaConfermare.map((app, i) => (
-                <li
-                  key={i}
-                  className="py-3 flex items-center justify-between px-3 rounded-md hover:bg-warning/10 transition"
-                >
-                  <div>
-                    <p className="font-medium text-foreground">Appuntamento</p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(app.data_appuntamento).toLocaleDateString()} •{" "}
-                      {app.ora_appuntamento}
+            <div className="p-4">
+                {/* Utilizza text-primary (variabile principale di Shadcn) per il successo/stato desiderato */}
+                <CardTitle className="text-lg font-semibold text-center text-primary mb-4">
+                    Appuntamenti Confermati
+                </CardTitle>
+
+                {appuntamentiConfermati.length === 0 ? (
+                    <p className="text-center text-sm text-muted-foreground pt-2 pb-2">
+                        Nessun appuntamento confermato.
                     </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      asChild
-                      className="text-sm"
-                    >
-                      <Link to="/app/chat">Chat</Link>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => eliminaRichiestaAppuntamento(app.id)}
-                      className="hover:bg-destructive/10 text-destructive transition"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
+                ) : (
+                    <ul className="divide-y divide-border/60">
+                        {appuntamentiConfermati.map((app, i) => (
+                            <li
+                                key={i}
+                                // Utilizza hover:bg-primary/10 per un effetto visivo che richiama il colore del titolo
+                                className="py-3 px-4 flex items-center justify-between transition hover:bg-primary/10"
+                            >
+                                <div>
+                                    <p className="font-medium text-foreground">Appuntamento</p>
+                                    <p className="text-sm text-muted-foreground mt-0.5">
+                                        {new Date(app.data_appuntamento).toLocaleDateString('it-IT')} •{" "}
+                                        {app.ora_appuntamento}
+                                    </p>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </div>
+
         </CardContent>
-      </Card>
-    </div>
+    </Card>
   </div>
-);
-
-}
+)}

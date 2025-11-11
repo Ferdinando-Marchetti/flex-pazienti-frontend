@@ -8,8 +8,8 @@ import LoginPage from "./pages/auth/Login"
 import SchedeAllenamentoPage from "./pages/app/Allenamento/SchedeAllenamento"
 import AppuntamentiPage from "./pages/app/Appuntamenti"
 import DettagliSchedaPage from "./pages/app/Allenamento/DettagliScheda"
-import NuovaSessionePage from "./pages/app/sessioni/NuovaSessione"
-import DettaglioSessionePage from "./pages/app/sessioni/DettaglioSessione"
+import RiepilogoSessionePage from "./pages/app/sessioni/RiepilogoSessionePage"
+import NuovaSessione from "./pages/app/sessioni/NuovaSessione"
 
 export const router = createBrowserRouter([
   {
@@ -28,8 +28,8 @@ export const router = createBrowserRouter([
           { path: "chat", element: <ChatPage /> },
           { path: "allenamento", element: <SchedeAllenamentoPage /> },
           { path: "allenamento/:id", element: <DettagliSchedaPage /> },
-          { path: "sessioni/nuova", element: <NuovaSessionePage /> },
-          { path: "sessioni/:id", element: <DettaglioSessionePage /> },
+          { path: "sessioni/:id", element: <NuovaSessione /> },
+          { path: "sessione/:id", element: <RiepilogoSessionePage /> },
           { path: "chat/:trattamento_id", element: <ChatPage /> },
         ],
       },

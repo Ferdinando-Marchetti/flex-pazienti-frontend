@@ -10,19 +10,16 @@ import { cn } from "@/lib/utils";
 
 export default function ChatPage() {
   const [fisioterapista, setFisioterapista] = useState<any>();
-  const [inizFisi, setInizFisi] = useState<string>('AA');
+  const [inizFisi, setInizFisi] = useState<string>('F');
   const [messaggi, setMessaggi] = useState<any[]>([]);
   const [testo, setTesto] = useState("");
   const [caricamento, setCaricamento] = useState(false);
   const [errore, setErrore] = useState<string | null>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
 
-
-
   const caricaFisioDati = async () => {
     try {
       const res = await getFisioterapista();
-      console.log(res)
       setFisioterapista(res.data)
       setInizFisi(`${res.data.nome?.trim()?.charAt(0).toUpperCase() ?? ""}${res.data.cognome?.trim()?.charAt(0).toUpperCase() ?? ""}`)
     } catch (err){
@@ -86,7 +83,7 @@ export default function ChatPage() {
     setTesto("");
 
     try {
-      await creaMessaggioPaziente(1, testoPulito);
+      await creaMessaggioPaziente(fisioterapista.id, testoPulito);
     } catch (e) {
       console.error(e);
       setErrore("Invio non riuscito");
@@ -118,7 +115,7 @@ export default function ChatPage() {
             {inizFisi}
           </div>
           <div className="flex-1">
-            <div className="text-sm font-semibold">...</div>
+            <div className="text-sm font-semibold">Fisioterapista</div>
             <div className="text-[11px] text-primary-foreground/80"></div>
           </div>
         </div>
