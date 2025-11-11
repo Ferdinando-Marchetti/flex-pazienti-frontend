@@ -30,6 +30,7 @@ export const router = createBrowserRouter([
           { path: "allenamento/:id", element: <DettagliSchedaPage /> },
           { path: "sessioni/nuova", element: <NuovaSessionePage /> },
           { path: "sessioni/:id", element: <DettaglioSessionePage /> },
+          { path: "chat/:trattamento_id", element: <ChatPage /> },
         ],
       },
     ],

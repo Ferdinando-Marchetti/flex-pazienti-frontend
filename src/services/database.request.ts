@@ -68,8 +68,16 @@ export const updateEsercizioSessione = async (
 
 // Daniele
 // richiesta messaggi api.get(`/pazienti/messaggi`)
-/* richiesta messaggi api.post(`/pazienti/creaMessaggi`,...)
+export const listMessaggiByPaziente = async () => {
+  const response = await api.get(`/pazienti/messaggi`)
+  return response.data
+}
 
-  { trattamento_id, testo }
+export const creaMessaggioPaziente = async (trattamento_id: number, testo: string) => {
+  const payload = { trattamento_id, testo }
+  const response = await api.post(`/pazienti/creaMessaggi`, payload)
+  return response.data
+}
+
+  
    
-*/
