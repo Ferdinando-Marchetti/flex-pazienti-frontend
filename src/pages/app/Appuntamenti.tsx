@@ -131,181 +131,187 @@ export default function AppuntamentiPage() {
     )
   }
 
-  return (
-    <div className="p-4 flex justify-center items-center bg-black min-h-screen">
-      {/* 🔹 Dialog per nuova richiesta */}
-      <Dialog open={isRichiestaOpen} onOpenChange={setIsRichiestaOpen}>
-        <DialogContent className="max-w-md bg-neutral-950 border border-neutral-800 text-gray-200">
-          <DialogHeader>
-            <DialogTitle>Richiedi un nuovo appuntamento</DialogTitle>
-          </DialogHeader>
+return (
+  <div className="flex flex-col items-center justify-center p-6 space-y-8">
+    {/* 🔹 Dialog: nuova richiesta */}
+    <Dialog open={isRichiestaOpen} onOpenChange={setIsRichiestaOpen}>
+      <DialogContent className="bg-card border border-border text-foreground shadow-2xl rounded-xl">
+        <DialogHeader>
+          <DialogTitle className="text-lg font-semibold">
+            Richiedi un nuovo appuntamento
+          </DialogTitle>
+          <p className="text-sm text-muted-foreground">
+            Seleziona una data e un orario per la tua richiesta.
+          </p>
+        </DialogHeader>
 
-          <div className="flex flex-col gap-4 mt-2">
-            <Input
-              type="date"
-              value={dataSelezionata}
-              onChange={(e) => setDataSelezionata(e.target.value)}
-              className="bg-neutral-900 border-neutral-700 text-white"
-            />
+        <div className="flex flex-col gap-4 mt-4">
+          <Input
+            type="date"
+            value={dataSelezionata}
+            onChange={(e) => setDataSelezionata(e.target.value)}
+            className="bg-muted border-border text-foreground"
+          />
 
-            {/* 🔹 Menu a tendina per l’orario */}
-            <select
-              value={oraSelezionata}
-              onChange={(e) => setOraSelezionata(e.target.value)}
-              className="bg-neutral-900 border border-neutral-700 text-white rounded-md p-2"
-            >
-              <option value="">Seleziona un orario</option>
-              {orariDisponibili.map((ora) => (
-                <option key={ora} value={ora}>{ora}</option>
-              ))}
-            </select>
+          <select
+            value={oraSelezionata}
+            onChange={(e) => setOraSelezionata(e.target.value)}
+            className="bg-muted border border-border text-foreground rounded-md p-2 focus:ring-2 focus:ring-primary transition"
+          >
+            <option value="">Seleziona un orario</option>
+            {orariDisponibili.map((ora) => (
+              <option key={ora} value={ora}>
+                {ora}
+              </option>
+            ))}
+          </select>
 
-            <Button
-              className="bg-green-700 hover:bg-green-800 text-white"
-              onClick={inviaRichiestaAppuntamento}
-            >
-              Invia richiesta
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+          <Button
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+            onClick={inviaRichiestaAppuntamento}
+          >
+            Invia richiesta
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
 
-      {/* 🔹 Grande card principale */}
-      <Card className="w-full max-w-5xl bg-neutral-900 border border-neutral-800 rounded-3xl shadow-xl p-5">
-        <CardHeader className="text-center pb-2">
-          <CardTitle className="text-xl font-bold text-white">I tuoi appuntamenti</CardTitle>
+    {/* 🔹 Calendario principale */}
+    <Card className="w-full bg-card border border-border rounded-2xl shadow-md">
+      <CardHeader className="text-center pb-2">
+        <CardTitle className="text-lg font-semibold text-foreground">
+          Calendario Appuntamenti
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="flex justify-center">
+        <Calendar
+          mode="single"
+          selected={selectedDay || undefined}
+          onDayClick={handleDayClick}
+          className="rounded-md border border-border shadow-sm w-full bg-muted text-foreground"
+          modifiers={{
+            selezionato: (day: any) =>
+              !!selectedDay && day.toDateString() === selectedDay?.toDateString(),
+            confermato: (day: any) => dateConfermate.includes(day.toDateString()),
+            daConfermare: (day: any) => dateDaConfermare.includes(day.toDateString()),
+          }}
+          modifiersStyles={{
+            selezionato: {
+              backgroundColor: "hsl(var(--muted-foreground))",
+              color: "white",
+              borderRadius: "50%",
+            },
+            confermato: {
+              backgroundColor: "hsl(var(--success))",
+              color: "white",
+              borderRadius: "50%",
+            },
+            daConfermare: {
+              backgroundColor: "hsl(var(--warning))",
+              color: "black",
+              borderRadius: "50%",
+            },
+          }}
+        />
+      </CardContent>
+    </Card>
+
+    {/* 🔹 Sezione elenchi */}
+    <div className="flex flex-col md:flex-row gap-6 w-full">
+
+      {/* ✅ Confermati */}
+      <Card className="flex-1 bg-card border border-border rounded-2xl shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-base text-center font-medium text-foreground">
+            Appuntamenti Confermati
+          </CardTitle>
         </CardHeader>
+        <CardContent className="text-sm space-y-2">
+          {appuntamentiConfermati.length === 0 ? (
+            <p className="text-center text-muted-foreground">
+              Nessun appuntamento confermato.
+            </p>
+          ) : (
+            <ul className="divide-y divide-border">
+              {appuntamentiConfermati.map((app, i) => (
+                <li
+                  key={i}
+                  className="py-3 flex items-center justify-between px-3 rounded-md hover:bg-primary/5 transition"
+                >
+                  <div>
+                    <p className="font-medium text-foreground">Appuntamento</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(app.data_appuntamento).toLocaleDateString()} •{" "}
+                      {app.ora_appuntamento}
+                    </p>
+                  </div>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    asChild
+                    className="text-sm"
+                  >
+                    <Link to="/app/chat">Chat</Link>
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
 
-        <CardContent className="flex flex-col items-center gap-6">
-          {/* 🔹 Calendario */}
-          <Card className="w-full max-w-md bg-neutral-950 border border-neutral-800 rounded-2xl shadow-lg">
-            <CardHeader className="text-center pb-1">
-              <CardTitle className="text-lg text-gray-200">Calendario</CardTitle>
-            </CardHeader>
-            <CardContent className="flex justify-center">
-              <Calendar
-                mode="single"
-                selected={selectedDay || undefined}
-                onDayClick={handleDayClick}
-                className="rounded-md border border-neutral-800 shadow-sm w-full max-w-sm bg-neutral-950 text-white"
-                modifiers={{
-                  selezionato: (day: any) =>
-                    !!selectedDay && day.toDateString() === selectedDay?.toDateString(),
-                  confermato: (day: any) => dateConfermate.includes(day.toDateString()),
-                  daConfermare: (day: any) => dateDaConfermare.includes(day.toDateString()),
-                }}
-                modifiersStyles={{
-                  selezionato: {
-                    backgroundColor: "#555",
-                    color: "white",
-                    borderRadius: "50%",
-                  },
-                  confermato: {
-                    backgroundColor: "#16a34a",
-                    color: "white",
-                    borderRadius: "50%",
-                  },
-                  daConfermare: {
-                    backgroundColor: "#eab308",
-                    color: "black",
-                    borderRadius: "50%",
-                  },
-                }}
-                captionLayout="dropdown"
-              />
-            </CardContent>
-          </Card>
-
-          {/* 🔹 Elenchi sotto */}
-          <div className="flex flex-col md:flex-row justify-between w-full gap-4">
-            {/* Confermati */}
-            <Card className="w-full md:w-1/2 bg-neutral-950 border border-neutral-800 rounded-2xl shadow-md">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base text-gray-300 text-center">
-                  Confermati
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm">
-                {appuntamentiConfermati.length === 0 ? (
-                  <p className="text-gray-600 text-center">Nessun appuntamento confermato.</p>
-                ) : (
-                  <ul className="divide-y divide-neutral-800">
-                    {appuntamentiConfermati.map((app, i) => (
-                      <li
-                        key={i}
-                        className="py-2 flex items-center justify-between hover:bg-green-900/20 rounded-md px-3 transition"
-                      >
-                        <div>
-                          <p className="text-gray-200 font-medium">Appuntamento</p>
-                          <p className="text-xs text-gray-500">
-                            {new Date(app.data_appuntamento).toLocaleDateString()} • {app.ora_appuntamento}
-                          </p>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          asChild
-                          className="border-gray-700 text-gray-300 hover:bg-neutral-800"
-                        >
-                          <Link to="/app/chat">Chat</Link>
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Da confermare */}
-            <Card className="w-full md:w-1/2 bg-neutral-950 border border-neutral-800 rounded-2xl shadow-md">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base text-gray-300 text-center">
-                  Da confermare
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm">
-                {appuntamentiDaConfermare.length === 0 ? (
-                  <p className="text-gray-600 text-center">Nessuna richiesta in sospeso.</p>
-                ) : (
-                  <ul className="divide-y divide-neutral-800">
-                    {appuntamentiDaConfermare.map((app, i) => (
-                      <li
-                        key={i}
-                        className="py-2 flex items-center justify-between hover:bg-yellow-900/20 rounded-md px-3 transition"
-                      >
-                        <div>
-                          <p className="text-gray-200 font-medium">Appuntamento</p>
-                          <p className="text-xs text-gray-500">
-                            {new Date(app.data_appuntamento).toLocaleDateString()} • {app.ora_appuntamento}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            asChild
-                            className="border-gray-700 text-gray-300 hover:bg-neutral-800"
-                          >
-                            <Link to="/app/chat">Chat</Link>
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => eliminaRichiestaAppuntamento(app.id)}
-                            className="hover:bg-red-900/30 text-red-500"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+      {/* ⏳ Da confermare */}
+      <Card className="flex-1 bg-card border border-border rounded-2xl shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-base text-center font-medium text-foreground">
+            Appuntamenti da Confermare
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm space-y-2">
+          {appuntamentiDaConfermare.length === 0 ? (
+            <p className="text-center text-muted-foreground">
+              Nessuna richiesta in sospeso.
+            </p>
+          ) : (
+            <ul className="divide-y divide-border">
+              {appuntamentiDaConfermare.map((app, i) => (
+                <li
+                  key={i}
+                  className="py-3 flex items-center justify-between px-3 rounded-md hover:bg-warning/10 transition"
+                >
+                  <div>
+                    <p className="font-medium text-foreground">Appuntamento</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(app.data_appuntamento).toLocaleDateString()} •{" "}
+                      {app.ora_appuntamento}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      asChild
+                      className="text-sm"
+                    >
+                      <Link to="/app/chat">Chat</Link>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => eliminaRichiestaAppuntamento(app.id)}
+                      className="hover:bg-destructive/10 text-destructive transition"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </CardContent>
       </Card>
     </div>
-  )
+  </div>
+);
+
 }

@@ -76,17 +76,11 @@ export const updateEsercizioSessione = async (
   })
 }
 
-// Michele
-// richiesta trattamenti api.get(`/pazienti/trattamenti`)
-// richiesta appuntamenti api.get(`/pazienti/appuntamenti`)
-/* richiesta appuntamenti api.post(`/pazienti/creaAppuntamento`, ...)
+export const getFisioterapista = async () => {
+  const response = await api.get(`/pazienti/fisioterapista`)
+  return response.data
+}
 
-  { trattamento_id: dato , data_appuntamento: dato, ora_appuntamento: dato }
-
-*/
-
-// Daniele
-// richiesta messaggi api.get(`/pazienti/messaggi`)
 export const listMessaggiByPaziente = async () => {
   const response = await api.get(`/pazienti/messaggi`)
   return response.data
@@ -98,5 +92,3 @@ export const creaMessaggioPaziente = async (trattamento_id: number, testo: strin
   return response.data
 }
 
-  
-   

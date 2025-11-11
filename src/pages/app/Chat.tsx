@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
+  getFisioterapista,
   listMessaggiByPaziente,
   creaMessaggioPaziente,
 } from "@/services/database.request";
@@ -8,11 +9,26 @@ import { Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function ChatPage() {
+  const [fisioterapista, setFisioterapista] = useState<any>();
+  const [inizFisi, setInizFisi] = useState<string>('AA');
   const [messaggi, setMessaggi] = useState<any[]>([]);
   const [testo, setTesto] = useState("");
   const [caricamento, setCaricamento] = useState(false);
   const [errore, setErrore] = useState<string | null>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
+
+
+
+  const caricaFisioDati = async () => {
+    try {
+      const res = await getFisioterapista();
+      console.log(res)
+      setFisioterapista(res.data)
+      setInizFisi(`${res.data.nome?.trim()?.charAt(0).toUpperCase() ?? ""}${res.data.cognome?.trim()?.charAt(0).toUpperCase() ?? ""}`)
+    } catch (err){
+      console.log("Problemi: " + err)
+    }
+  }
 
   // === FUNZIONE DI CARICAMENTO ===
   const caricaMessaggi = async (showLoading = false) => {
@@ -35,6 +51,7 @@ export default function ChatPage() {
 
   // === PRIMO CARICAMENTO ===
   useEffect(() => {
+    caricaFisioDati()
     caricaMessaggi(true);
   }, []);
 
@@ -86,15 +103,26 @@ export default function ChatPage() {
   return (
     <div className="flex flex-col h-[89vh] px-6 mx-auto">
       {/* HEADER */}
-      <div className="flex items-center gap-3 px-4 py-2 bg-primary text-primary-foreground rounded-t-lg">
-        <div className="w-9 h-9 rounded-full bg-primary-foreground/20 flex items-center justify-center text-xs font-semibold">
-          LV
+      {fisioterapista ? (
+        <div className="flex items-center gap-3 px-4 py-2 bg-primary text-primary-foreground rounded-t-lg">
+          <div className="w-9 h-9 rounded-full bg-primary-foreground/20 flex items-center justify-center text-xs font-semibold">
+            {inizFisi}
+          </div>
+          <div className="flex-1">
+            <div className="text-sm font-semibold">{fisioterapista.nome} {fisioterapista.cognome}</div>
+          </div>
         </div>
-        <div className="flex-1">
-          <div className="text-sm font-semibold">Dott.ssa Laura Verdi</div>
-          <div className="text-[11px] text-primary-foreground/80">online</div>
+      ):(
+        <div className="flex items-center gap-3 px-4 py-2 bg-primary text-primary-foreground rounded-t-lg">
+          <div className="w-9 h-9 rounded-full bg-primary-foreground/20 flex items-center justify-center text-xs font-semibold">
+            {inizFisi}
+          </div>
+          <div className="flex-1">
+            <div className="text-sm font-semibold">...</div>
+            <div className="text-[11px] text-primary-foreground/80"></div>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* AREA MESSAGGI */}
       <div
@@ -144,7 +172,7 @@ export default function ChatPage() {
                     >
                       {!isPaziente && (
                         <div className="mr-2 w-8 h-8 rounded-full bg-primary/80 text-primary-foreground text-[11px] flex items-center justify-center">
-                          LV
+                          {inizFisi}
                         </div>
                       )}
 
