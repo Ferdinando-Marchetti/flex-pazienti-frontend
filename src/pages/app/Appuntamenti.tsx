@@ -1,8 +1,4 @@
-/*
-  Richiedi l'appuntamento con dati del trattamento, fai visualizzare direttamente il nome del fisioterapista e sistema la data di quando clicchi
-*/
-
-import { useEffect, useState } from "react" 
+import { useEffect, useState } from "react"
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card"
 import { Calendar } from "@/components/ui/calendar"
 import {
@@ -24,285 +20,255 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { Link } from "react-router-dom"
-import { getAppuntamenti } from "@/services/database.request"
+import {
+  getAppuntamenti,
+  getTrattamenti,
+  creaRichiestaAppuntamento,
+} from "@/services/database.request"
+import { Trash2 } from "lucide-react"
 
 export default function AppuntamentiPage() {
-  const [date, setDate] = useState<Date | undefined>()
+  const [appuntamentiConfermati, setAppuntamentiConfermati] = useState<any[]>([])
+  const [appuntamentiDaConfermare, setAppuntamentiDaConfermare] = useState<any[]>([])
   const [selectedApp, setSelectedApp] = useState<any | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isRichiestaOpen, setIsRichiestaOpen] = useState(false)
+  const [loading, setLoading] = useState(true)
 
-  const [appuntamentiConfermati, setAppuntamentiConfermati] = useState([
-    { nomeDottore: "Dr. Rossi", data: "2025-11-03T09:00:00", ora: "09:00" },
-    { nomeDottore: "Dr. Verdi", data: "2025-11-15T14:30:00", ora: "14:30" },
-    { nomeDottore: "Dr. Bianchi", data: "2025-11-22T11:00:00", ora: "11:00" },
-  ])
-
-  const [appuntamentiDaConfermare, setAppuntamentiDaConfermare] = useState<any[]>([])
-
-  
-  const [dottoreSelezionato, setDottoreSelezionato] = useState("")
   const [dataSelezionata, setDataSelezionata] = useState("")
   const [oraSelezionata, setOraSelezionata] = useState("")
+  const [trattamentoId, setTrattamentoId] = useState<number | null>(null)
+  const [selectedDay, setSelectedDay] = useState<Date | null>(null)
 
   useEffect(() => {
     loadAppuntamenti()
+    loadTrattamenti()
   }, [])
 
   const loadAppuntamenti = async () => {
     try {
+      setLoading(true)
       const res = await getAppuntamenti()
-      
-    } catch (error) {
-      console.log(error)
+      const lista = Array.isArray(res.data) ? res.data : []
+      setAppuntamentiConfermati(lista.filter((a: any) => a.stato_conferma === "Confermato"))
+      setAppuntamentiDaConfermare(lista.filter((a: any) => a.stato_conferma !== "Confermato"))
+    } catch {
+      setAppuntamentiConfermati([])
+      setAppuntamentiDaConfermare([])
+    } finally {
+      setLoading(false)
     }
   }
 
-  
+  const loadTrattamenti = async () => {
+    try {
+      const res = await getTrattamenti()
+      const lista =
+        Array.isArray(res)
+          ? res
+          : res?.data && Array.isArray(res.data)
+          ? res.data
+          : []
+      if (lista.length > 0) setTrattamentoId(lista[0].id)
+    } catch {
+      setTrattamentoId(null)
+    }
+  }
+
+  const inviaRichiestaAppuntamento = async () => {
+    if (!dataSelezionata || !oraSelezionata || !trattamentoId) {
+      alert("Errore: dati mancanti.")
+      return
+    }
+
+    const nuovaRichiesta = {
+      trattamento_id: trattamentoId,
+      data_appuntamento: dataSelezionata,
+      ora_appuntamento: oraSelezionata,
+    }
+
+    try {
+      await creaRichiestaAppuntamento(nuovaRichiesta)
+      await loadAppuntamenti()
+      alert("Richiesta inviata con successo.")
+    } catch {
+      alert("Errore durante l'invio della richiesta.")
+    } finally {
+      setIsRichiestaOpen(false)
+      setDataSelezionata("")
+      setOraSelezionata("")
+    }
+  }
+
+  const eliminaRichiestaAppuntamento = async (id: number) => {
+    console.log("Elimina richiesta ID:", id)
+    alert("Funzione non ancora implementata.")
+  }
+
   const dateConfermate = appuntamentiConfermati.map(app =>
-    new Date(app.data).toDateString()
+    new Date(app.data_appuntamento).toDateString()
   )
   const dateDaConfermare = appuntamentiDaConfermare.map(app =>
-    new Date(app.data).toDateString()
+    new Date(app.data_appuntamento).toDateString()
   )
 
-  
   const handleDayClick = (day: Date) => {
+    setSelectedDay(day)
     const matchConfermato = appuntamentiConfermati.find(
-      app => new Date(app.data).toDateString() === day.toDateString()
+      app => new Date(app.data_appuntamento).toDateString() === day.toDateString()
     )
     const matchRichiesta = appuntamentiDaConfermare.find(
-      app => new Date(app.data).toDateString() === day.toDateString()
+      app => new Date(app.data_appuntamento).toDateString() === day.toDateString()
     )
 
     if (matchConfermato || matchRichiesta) {
       setSelectedApp(matchConfermato || matchRichiesta)
       setIsDialogOpen(true)
     } else {
-     
-      setDataSelezionata(day.toISOString().split("T")[0])
+      setDataSelezionata(day.toLocaleDateString("en-CA"))
       setIsRichiestaOpen(true)
     }
   }
 
-  
-  const inviaRichiestaAppuntamento = () => {
-    if (!dottoreSelezionato || !dataSelezionata || !oraSelezionata) return
+  const oggi = new Date().toISOString().split("T")[0]
 
-    const nuovaRichiesta = {
-      nomeDottore: dottoreSelezionato,
-      data: `${dataSelezionata}T${oraSelezionata}`,
-      ora: oraSelezionata,
-    }
-    setAppuntamentiDaConfermare([...appuntamentiDaConfermare, nuovaRichiesta])
-    setIsRichiestaOpen(false)
-    setDottoreSelezionato("")
-    setDataSelezionata("")
-    setOraSelezionata("")
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen bg-black">
+        <p className="text-gray-300 text-lg font-semibold">Caricamento appuntamenti...</p>
+      </div>
+    )
   }
 
   return (
-    <div className="p-6 flex flex-col items-center gap-6">
+    <div className="p-4 flex justify-center items-center bg-black min-h-screen">
+      {/* Grande card principale */}
+      <Card className="w-full max-w-5xl bg-neutral-900 border border-neutral-800 rounded-3xl shadow-xl p-5">
+        <CardHeader className="text-center pb-2">
+          <CardTitle className="text-xl font-bold text-white">I tuoi appuntamenti</CardTitle>
+        </CardHeader>
 
-      
-      <Dialog open={isRichiestaOpen} onOpenChange={setIsRichiestaOpen}>
-        <DialogTrigger asChild>
-          <Button className="mb-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold">
-            Richiedi appuntamento
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Richiedi un nuovo appuntamento</DialogTitle>
-          </DialogHeader>
+        <CardContent className="flex flex-col items-center gap-6">
+          {/* 🔹 Calendario */}
+          <Card className="w-full max-w-md bg-neutral-950 border border-neutral-800 rounded-2xl shadow-lg">
+            <CardHeader className="text-center pb-1">
+              <CardTitle className="text-lg text-gray-200">Calendario</CardTitle>
+            </CardHeader>
+            <CardContent className="flex justify-center">
+              <Calendar
+                mode="single"
+                selected={selectedDay || undefined}
+                onDayClick={handleDayClick}
+                className="rounded-md border border-neutral-800 shadow-sm w-full max-w-sm bg-neutral-950 text-white"
+                modifiers={{
+                  selezionato: (day: any) =>
+                    selectedDay && day.toDateString() === selectedDay.toDateString(),
+                  confermato: (day: any) => dateConfermate.includes(day.toDateString()),
+                  daConfermare: (day: any) => dateDaConfermare.includes(day.toDateString()),
+                }}
+                modifiersStyles={{
+                  selezionato: {
+                    backgroundColor: "#555",
+                    color: "white",
+                    borderRadius: "50%",
+                  },
+                  confermato: {
+                    backgroundColor: "#16a34a", // ✅ verde confermati
+                    color: "white",
+                    borderRadius: "50%",
+                  },
+                  daConfermare: {
+                    backgroundColor: "#eab308", // ✅ giallo da confermare
+                    color: "black",
+                    borderRadius: "50%",
+                  },
+                }}
+                captionLayout="dropdown"
+              />
+            </CardContent>
+          </Card>
 
-          <div className="flex flex-col gap-4 mt-2">
-            <Select onValueChange={setDottoreSelezionato}>
-              <SelectTrigger>
-                <SelectValue placeholder="Seleziona un dottore" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Dr. Rossi">Dr. Rossi</SelectItem>
-                <SelectItem value="Dr. Verdi">Dr. Verdi</SelectItem>
-                <SelectItem value="Dr. Bianchi">Dr. Bianchi</SelectItem>
-              </SelectContent>
-            </Select>
+          {/* 🔹 Elenchi sotto */}
+          <div className="flex flex-col md:flex-row justify-between w-full gap-4">
+            {/* Confermati */}
+            <Card className="w-full md:w-1/2 bg-neutral-950 border border-neutral-800 rounded-2xl shadow-md">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base text-gray-300 text-center">
+                  Confermati
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm">
+                {appuntamentiConfermati.length === 0 ? (
+                  <p className="text-gray-600 text-center">Nessun appuntamento confermato.</p>
+                ) : (
+                  <ul className="divide-y divide-neutral-800">
+                    {appuntamentiConfermati.map((app, i) => (
+                      <li
+                        key={i}
+                        className="py-2 flex items-center justify-between hover:bg-green-900/20 rounded-md px-3 transition"
+                      >
+                        <div>
+                          <p className="text-gray-200 font-medium">Appuntamento</p>
+                          <p className="text-xs text-gray-500">
+                            {new Date(app.data_appuntamento).toLocaleDateString()} • {app.ora_appuntamento}
+                          </p>
+                        </div>
+                        <Button variant="outline" size="sm" asChild className="border-gray-700 text-gray-300 hover:bg-neutral-800">
+                          <Link to="/app/chat">Chat</Link>
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
 
-            <Input
-              type="date"
-              value={dataSelezionata}
-              onChange={(e) => setDataSelezionata(e.target.value)}
-            />
-            <Input
-              type="time"
-              value={oraSelezionata}
-              onChange={(e) => setOraSelezionata(e.target.value)}
-            />
-
-            <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={inviaRichiestaAppuntamento}>
-              Invia richiesta
-            </Button>
+            {/* Da confermare */}
+            <Card className="w-full md:w-1/2 bg-neutral-950 border border-neutral-800 rounded-2xl shadow-md">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base text-gray-300 text-center">
+                  Da confermare
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm">
+                {appuntamentiDaConfermare.length === 0 ? (
+                  <p className="text-gray-600 text-center">Nessuna richiesta in sospeso.</p>
+                ) : (
+                  <ul className="divide-y divide-neutral-800">
+                    {appuntamentiDaConfermare.map((app, i) => (
+                      <li
+                        key={i}
+                        className="py-2 flex items-center justify-between hover:bg-yellow-900/20 rounded-md px-3 transition"
+                      >
+                        <div>
+                          <p className="text-gray-200 font-medium">Appuntamento</p>
+                          <p className="text-xs text-gray-500">
+                            {new Date(app.data_appuntamento).toLocaleDateString()} • {app.ora_appuntamento}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button variant="outline" size="sm" asChild className="border-gray-700 text-gray-300 hover:bg-neutral-800">
+                            <Link to="/app/chat">Chat</Link>
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => eliminaRichiestaAppuntamento(app.id)}
+                            className="hover:bg-red-900/30 text-red-500"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
           </div>
-        </DialogContent>
-      </Dialog>
-
-      <div className="flex flex-col md:flex-row gap-6 w-full max-w-5xl">
-
-        
-        <Card className="w-full md:w-[48%] shadow-lg border border-gray-200 rounded-2xl">
-          <CardHeader>
-            <CardTitle className="text-xl font-semibold text-center">
-              Calendario
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center gap-4">
-            <Calendar
-              mode="single"
-              selected={undefined}
-              onDayClick={handleDayClick}
-              className="rounded-md border shadow-sm w-full"
-              modifiers={{
-                confermato: (day) => dateConfermate.includes(day.toDateString()),
-                daConfermare: (day) => dateDaConfermare.includes(day.toDateString()),
-              }}
-              modifiersStyles={{
-                confermato: {
-                  backgroundColor: "#2563eb",
-                  color: "white",
-                  borderRadius: "50%",
-                },
-                daConfermare: {
-                  backgroundColor: "#facc15",
-                  color: "black",
-                  borderRadius: "50%",
-                },
-              }}
-              captionLayout="dropdown"
-            />
-          </CardContent>
-        </Card>
-
-        
-        <Card className="w-full md:w-[48%] shadow-lg border border-gray-200 rounded-2xl">
-          <CardHeader>
-            <CardTitle className="text-xl font-semibold text-center">
-              I tuoi appuntamenti
-            </CardTitle>
-          </CardHeader>
-
-          <CardContent className="flex flex-col gap-6">
-           
-<div>
-  <h3 className="text-lg font-semibold text-white mb-2">Confermati</h3>
-  {appuntamentiConfermati.length === 0 ? (
-    <p className="text-gray-500 text-center">Nessun appuntamento confermato.</p>
-  ) : (
-    <ul className="divide-y divide-gray-200">
-      {appuntamentiConfermati.map((app, index) => (
-        <li
-          key={index}
-          className="py-3 flex items-center justify-between hover:bg-blue-800/40 rounded-lg px-3 transition"
-        >
-          <div>
-            <p className="font-medium text-white">{app.nomeDottore}</p>
-            <p className="text-sm text-gray-300">
-              {new Date(app.data).toLocaleDateString()} – {app.ora}
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setSelectedApp(app)
-              setIsDialogOpen(true)
-            }}
-          >
-            Dettagli
-          </Button>
-        </li>
-      ))}
-    </ul>
-  )}
-</div>
-
-
-<div>
-  <h3 className="text-lg font-semibold text-white mb-2">Da confermare</h3>
-  {appuntamentiDaConfermare.length === 0 ? (
-    <p className="text-gray-500 text-center">Nessuna richiesta in sospeso.</p>
-  ) : (
-    <ul className="divide-y divide-gray-200">
-      {appuntamentiDaConfermare.map((app, index) => (
-        <li
-          key={index}
-          className="py-3 flex items-center justify-between hover:bg-yellow-800/40 rounded-lg px-3 transition"
-        >
-          <div>
-            <p className="font-medium text-white">{app.nomeDottore}</p>
-            <p className="text-sm text-gray-300">
-              {new Date(app.data).toLocaleDateString()} – {app.ora}
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setSelectedApp(app)
-                setIsDialogOpen(true)
-              }}
-            >
-              Dettagli
-            </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => {
-                const updated = appuntamentiDaConfermare.filter((_, i) => i !== index)
-                setAppuntamentiDaConfermare(updated)
-              }}
-            >
-              Elimina
-            </Button>
-          </div>
-        </li>
-      ))}
-    </ul>
-  )}
-</div>
-
-
-          </CardContent>
-        </Card>
-      </div>
-
-     
-      <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Dettagli appuntamento</AlertDialogTitle>
-            <AlertDialogDescription>
-              {selectedApp ? (
-                <>
-                  Dottore: {selectedApp.nomeDottore} <br />
-                  Data: {new Date(selectedApp.data).toLocaleDateString()} <br />
-                  Ora: {selectedApp.ora}
-                </>
-              ) : (
-                "Nessun dettaglio disponibile."
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Chiudi</AlertDialogCancel>
-            <AlertDialogAction>
-              <Link to="/app/chat">Vai alla chat</Link>
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        </CardContent>
+      </Card>
     </div>
   )
 }

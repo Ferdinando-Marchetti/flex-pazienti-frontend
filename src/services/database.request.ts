@@ -6,6 +6,25 @@ export const getAppuntamenti = async () => {
   return response.data
 }
 
+export const confermaAppuntamento = async (id: number) => {
+  const response = await api.put(`/pazienti/appuntamenti/${id}/conferma`)
+  return response.data
+}
+
+export const creaRichiestaAppuntamento = async (payload: {
+  trattamento_id: number
+  data_appuntamento: string
+  ora_appuntamento: string
+}) => {
+  const response = await api.post(`/pazienti/creaAppuntamento`, payload)
+  return response.data
+}
+
+export const getTrattamenti = async () => {
+  const response = await api.get(`/pazienti/trattamenti`)
+  return response.data
+}
+
 //Schede Esercizi
 export const getSchedeEsercizi = async () => {
   const response = await api.get(`/pazienti/schede`)
