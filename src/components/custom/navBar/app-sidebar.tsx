@@ -1,14 +1,8 @@
-"use client"
-
 import * as React from "react"
 import {
   BicepsFlexed,
   CalendarClock,
-  Command,
-  LayoutDashboard,
-  LifeBuoy,
   MessageCircle,
-  Send,
 } from "lucide-react"
 
 import { NavMain } from "@/components/custom/navBar/nav-main"
