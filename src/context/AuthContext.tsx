@@ -65,11 +65,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       async (error) => {
         const originalRequest = error.config;
 
-        // Gestione manutenzione
-        if (error.response?.status === 503) {
-          navigate('/maintenance');
-        }
-
         // Gestione refresh token automatico
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
