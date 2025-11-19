@@ -2,7 +2,6 @@ import { createContext, useContext, useState, type ReactNode, useEffect } from '
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios, { type AxiosResponse } from 'axios';
 
-// ✅ URL base del backend
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:1337/";
 
 // ✅ Tipi
@@ -31,10 +30,8 @@ interface AuthContextType {
   isLoading: boolean;
 }
 
-// ✅ Creazione contesto
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// ✅ Axios configurato
 export const api = axios.create({
   baseURL: API_URL,
   headers: { "Content-Type": "application/json" },

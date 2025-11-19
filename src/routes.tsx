@@ -35,9 +35,5 @@ export const router = createBrowserRouter([
       },
     ],
   },
-  { path: '*', element: 
-    <>
-      <h1>Pagina non trovata...</h1>
-    </>
-  }
+  { path: '*', element: <Navigate to='/login' /> }
 ])
